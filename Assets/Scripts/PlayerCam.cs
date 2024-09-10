@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NewBehaviourScript : MonoBehaviour {
+public class PlayerCam : MonoBehaviour {
     public float senseX;
     public float senseY;
 
@@ -23,9 +23,9 @@ public class NewBehaviourScript : MonoBehaviour {
         var mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * senseX;
         var mouseY = Input.GetAxisRaw("Mouse Y") * Time.deltaTime * senseY;
 
-        yRotation -= mouseX;
-        xRotation = Math.Clamp(xRotation, -90f, 90f);
-        
+        yRotation += mouseX;
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
         
         transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
