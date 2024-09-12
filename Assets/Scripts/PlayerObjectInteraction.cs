@@ -114,6 +114,12 @@ public class PlayerInteraction : MonoBehaviour
 
     void MoveObject()
     {
+        // Ensure the pipe is not snapped before moving it
+        if (grabbedPipe && grabbedPipe.isSnapped)
+        {
+            return;  // Exit the function if the pipe is already snapped
+        }
+        
         // Ensure the Rigidbody is not kinematic
         if (grabbedObjectRb.isKinematic)
         {
@@ -130,6 +136,11 @@ public class PlayerInteraction : MonoBehaviour
 
     void ReleaseObject()
     {
+        if (grabbedPipe && grabbedPipe.isSnapped)
+        {
+            return;  // Exit the function if the pipe is already snapped
+        }
+        
         grabbedPipe.SetHeldState(false);
         grabbedPipe = null;
         

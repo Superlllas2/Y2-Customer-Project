@@ -8,7 +8,7 @@ public class Pipe : MonoBehaviour
     public float snapDistance = 1f;    // Distance threshold for snapping pipes together
 
     private bool isBeingHeld = false;  // Is the pipe currently being held by the player?
-    private bool isSnapped = false;    // Is the pipe snapped and connected to another object?
+    public bool isSnapped = false;    // Is the pipe snapped and connected to another object?
     private Rigidbody rb;
 
     void Start()
@@ -65,7 +65,7 @@ public class Pipe : MonoBehaviour
                     SnapToOtherPipe(otherPipe.startEnd);
                     return;
                 }
-                else if (Vector3.Distance(endEnd.position, otherPipe.endEnd.position) <= snapDistance)
+                else if (Vector3.Distance(startEnd.position, otherPipe.endEnd.position) <= snapDistance)
                 {
                     SnapToOtherPipe(otherPipe.endEnd);
                     return;
@@ -76,11 +76,24 @@ public class Pipe : MonoBehaviour
 
     void SnapToOtherPipe(Transform targetEnd)
     {
-        // Snap this pipe's closest end to the other pipe's end
-        transform.position = targetEnd.position - (startEnd.position - transform.position);  // Adjust based on the connection point
-        transform.rotation = targetEnd.rotation;
+        // Check if we are connecting startEnd or endEnd
+        if (Vector3.Distance(startEnd.position, targetEnd.position) <= snapDistance)
+        {
+            // Align the start of this pipe to the target end
+            Vector3 connectionDirection = (targetEnd.position - endEnd.position).normalized;
+            transform.position = targetEnd.position - (startEnd.position - transform.position);  // Correct position
+            transform.rotation = targetEnd.rotation;
+        }
+        else if (Vector3.Distance(endEnd.position, targetEnd.position) <= snapDistance)
+        {
+            // Align the end of this pipe to the target start
+            Vector3 connectionDirection = (targetEnd.position - startEnd.position).normalized;
+            transform.position = targetEnd.position - (endEnd.position - transform.position);  // Correct position
+            transform.rotation = targetEnd.rotation;
+        }
 
         LockPipe();  // Lock the pipe in place
+        Debug.Log("isSnapped" + isSnapped + "rb.isKinematic" + rb.isKinematic + "isBeingHeld" + isBeingHeld);
     }
 
     void LockPipe()
@@ -102,6 +115,10 @@ public class Pipe : MonoBehaviour
         else if (!isSnapped)
         {
             rb.isKinematic = false;  // Enable physics again when dropped, if not snapped
+        }
+        else
+        {
+            rb.isKinematic = true;  // Disable physics when snapped to prevent further movement
         }
     }
 }
