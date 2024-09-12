@@ -19,12 +19,9 @@ public class Pipe : MonoBehaviour
     void Update()
     {
         // Check for pipe connection only if the pipe is being held and not already snapped
-        Debug.Log("isBeingHeld: " + isBeingHeld);
-        Debug.Log("!isSnapped: " + !isSnapped);
         if (isBeingHeld && !isSnapped)
         {
             CheckForConnection();
-            Debug.Log("Getting checked");
         }
     }
 
@@ -60,7 +57,7 @@ public class Pipe : MonoBehaviour
         {
             Pipe otherPipe = other.GetComponent<Pipe>();
 
-            if (otherPipe && otherPipe)
+            if (otherPipe && otherPipe != this)
             {
                 // Check if this pipe's endEnd is close enough to the other pipe's ends
                 if (Vector3.Distance(endEnd.position, otherPipe.startEnd.position) <= snapDistance)

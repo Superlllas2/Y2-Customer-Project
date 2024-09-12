@@ -38,7 +38,7 @@ public class PlayerInteraction : MonoBehaviour
             return;  // Skip the rest of the update logic if in rotation mode
         }
 
-        // Ray from the center of the screen (crosshair)
+        // Ray from the center of the screen
         Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
         RaycastHit hit;
 
@@ -47,7 +47,7 @@ public class PlayerInteraction : MonoBehaviour
         {
             ObjectOutline outlineScript = hit.collider.gameObject.GetComponent<ObjectOutline>();
 
-            // If we hit an object with an outline script
+            // If an object with an outline script is hit
             if (outlineScript)
             {
                 // If this is a new object, remove the outline from the previous one
@@ -55,7 +55,7 @@ public class PlayerInteraction : MonoBehaviour
                 {
                     if (lastOutlinedObject)
                     {
-                        lastOutlinedObject.RemoveOutline();  // Remove outline from the last object
+                        lastOutlinedObject.RemoveOutline();  // Remove outline
                     }
 
                     outlineScript.ApplyOutline();  // Apply outline to the new object
@@ -97,30 +97,45 @@ public class PlayerInteraction : MonoBehaviour
         if (Input.GetMouseButtonDown(0))  // Check if the left mouse button is pressed
         {
             Rigidbody hitRb = hit.collider.GetComponent<Rigidbody>();
-            if (hitRb)  // Check if the hit object has a Rigidbody
+            if (!hitRb.isKinematic)
             {
-                grabbedObjectRb = hitRb;
-                grabbedObjectRb.useGravity = false;  // Disable gravity while holding the object
-                grabbedObjectRb.drag = 10;           // Increase drag to smooth out movement
+                Pipe pipeComponent = hit.collider.GetComponent<Pipe>();
+                if (hitRb)  // Check if the hit object has a Rigidbody
+                {
+                    grabbedObjectRb = hitRb;
+                    grabbedPipe = pipeComponent;
+                    grabbedPipe.SetHeldState(true);
+                    grabbedObjectRb.useGravity = false;  // Disable gravity while holding the object
+                    grabbedObjectRb.drag = 10;           // Setting drug to better the rotation
+                }
             }
         }
     }
 
     void MoveObject()
     {
-        // Calculate the position in front of the camera where the object should move
+        // Ensure the Rigidbody is not kinematic
+        if (grabbedObjectRb.isKinematic)
+        {
+            grabbedObjectRb.isKinematic = false;  // Make sure the object is movable
+        }
+        
+        // The position in front of the camera where the object should come
         Vector3 holdPosition = cam.transform.position + cam.transform.forward * holdDistance;
 
-        // Move the grabbed object towards this position
+        // Move the grabbed object towards the position
         Vector3 directionToHoldPoint = (holdPosition - grabbedObjectRb.position);
         grabbedObjectRb.velocity = directionToHoldPoint * grabSpeed;  // Move the object toward the hold position
     }
 
     void ReleaseObject()
     {
+        grabbedPipe.SetHeldState(false);
+        grabbedPipe = null;
+        
         grabbedObjectRb.useGravity = true;  // Re-enable gravity when releasing
         grabbedObjectRb.drag = 1;           // Reset the drag value to default
-
+        
         // Apply a forward force in the direction of the camera when releasing the object
         grabbedObjectRb.AddForce(cam.transform.forward * throwForce, ForceMode.Impulse);
         
@@ -134,6 +149,7 @@ public class PlayerInteraction : MonoBehaviour
 
         if (cameraController)
         {
+            
             cameraController.enabled = false;      // Disable the camera control script
         }
     }
