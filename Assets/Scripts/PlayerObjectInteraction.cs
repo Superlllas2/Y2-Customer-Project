@@ -13,6 +13,7 @@ public class PlayerInteraction : MonoBehaviour
     private ObjectOutline lastOutlinedObject = null;
     private Rigidbody grabbedObjectRb = null;  // Reference to the currently grabbed object
     private Camera cam;
+    private Pipe grabbedPipe = null;
     private bool isInRotationMode = false;     // Flag to check if the player is in rotation mode
 
     public MonoBehaviour cameraController;
