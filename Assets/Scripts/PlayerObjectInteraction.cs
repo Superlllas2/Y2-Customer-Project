@@ -8,10 +8,14 @@ public class PlayerInteraction : MonoBehaviour
     public float grabSpeed = 10f;         // Speed of object movement toward the hold point
     public float throwForce = 500f;       // Force applied when throwing the object
     public float holdDistance = 2f;       // Distance in front of the player where the object will be held
+    public float rotationSpeed = 100f;    // Speed of rotation
 
     private ObjectOutline lastOutlinedObject = null;
     private Rigidbody grabbedObjectRb = null;  // Reference to the currently grabbed object
     private Camera cam;
+    private bool isInRotationMode = false;     // Flag to check if the player is in rotation mode
+
+    public MonoBehaviour cameraController;
 
     void Start()
     {
@@ -20,6 +24,19 @@ public class PlayerInteraction : MonoBehaviour
 
     void Update()
     {
+        // If we're in rotation mode, handle rotation
+        if (isInRotationMode)
+        {
+            RotateObject();  // Handle object rotation based on mouse movement
+
+            // Exit rotation mode when Shift is released
+            if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                ExitRotationMode();
+            }
+            return;  // Skip the rest of the update logic if in rotation mode
+        }
+
         // Ray from the center of the screen (crosshair)
         Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
         RaycastHit hit;
@@ -61,6 +78,11 @@ public class PlayerInteraction : MonoBehaviour
         // Move the grabbed object while the left mouse button is held
         if (grabbedObjectRb)
         {
+            if (Input.GetKeyDown(KeyCode.LeftShift))  // Enter rotation mode when Shift is pressed
+            {
+                EnterRotationMode();
+            }
+
             MoveObject();  // Move the grabbed object
             if (Input.GetMouseButtonUp(0))  // Release the object when the left mouse button is released
             {
@@ -102,5 +124,39 @@ public class PlayerInteraction : MonoBehaviour
         grabbedObjectRb.AddForce(cam.transform.forward * throwForce, ForceMode.Impulse);
         
         grabbedObjectRb = null;  // Reset the reference to the grabbed object
+    }
+
+    // Enter Rotation Mode: Disable player/camera movement, hide the cursor, and start rotating
+    void EnterRotationMode()
+    {
+        isInRotationMode = true;
+
+        if (cameraController)
+        {
+            cameraController.enabled = false;      // Disable the camera control script
+        }
+    }
+
+    // Exit Rotation Mode: Restore player/camera movement, show the cursor
+    void ExitRotationMode()
+    {
+        isInRotationMode = false;
+
+        if (cameraController)
+        {
+            cameraController.enabled = true;      // Disable the camera control script
+        }
+    }
+
+    // Rotate the grabbed object based on mouse movement
+    void RotateObject()
+    {
+        // Get mouse delta movement
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = Input.GetAxis("Mouse Y");
+
+        // Apply rotation based on mouse movement
+        grabbedObjectRb.transform.Rotate(Vector3.up, -mouseX * rotationSpeed * Time.deltaTime, Space.World);   // Rotate around Y axis
+        grabbedObjectRb.transform.Rotate(Vector3.right, mouseY * rotationSpeed * Time.deltaTime, Space.World); // Rotate around X axis
     }
 }

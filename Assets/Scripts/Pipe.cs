@@ -1,14 +1,14 @@
-using System;
 using UnityEngine;
 
 public class Pipe : MonoBehaviour
 {
-    public float rotationSpeed = 100f;   // Speed of rotation
+    public Transform startEnd;         // One end of the pipe
+    public Transform endEnd;           // The other end of the pipe
+    public LayerMask pickable;        // Layer for detecting other pipes
+    public float snapDistance = 1f;    // Distance threshold for snapping pipes together
 
-    private bool isBeingHeld = false;    // Is the pipe currently being held by the player?
-    private bool isRotating = false;     // Is the player rotating the pipe?
-    private Vector3 initialMousePosition;
-
+    private bool isBeingHeld = false;  // Is the pipe currently being held by the player?
+    private bool isSnapped = false;    // Is the pipe snapped and connected to another object?
     private Rigidbody rb;
 
     void Start()
@@ -18,67 +18,93 @@ public class Pipe : MonoBehaviour
 
     void Update()
     {
-        // If the player is holding the pipe
-        if (isBeingHeld)
+        // Check for pipe connection only if the pipe is being held and not already snapped
+        Debug.Log("isBeingHeld: " + isBeingHeld);
+        Debug.Log("!isSnapped: " + !isSnapped);
+        if (isBeingHeld && !isSnapped)
         {
-            Debug.Log("Hehehe");
-            // Check if the player is holding Shift to rotate
-            if (Input.GetMouseButton(0) && Input.GetKey(KeyCode.LeftShift))
-            {
-                StartRotation();
-            }
-            else if (isRotating)
-            {
-                StopRotation();
-            }
+            CheckForConnection();
+            Debug.Log("Getting checked");
+        }
+    }
 
-            if (isRotating)
+    void CheckForConnection()
+    {
+        // Check for nearby pipes within the snapDistance
+        Collider[] nearbyPipes = Physics.OverlapSphere(startEnd.position, snapDistance, pickable);
+
+        foreach (Collider other in nearbyPipes)
+        {
+            Pipe otherPipe = other.GetComponent<Pipe>();
+
+            if (otherPipe && otherPipe != this)
             {
-                RotatePipe();
+                // Check if this pipe's startEnd is close enough to the other pipe's ends
+                if (Vector3.Distance(startEnd.position, otherPipe.startEnd.position) <= snapDistance)
+                {
+                    SnapToOtherPipe(otherPipe.startEnd);
+                    return;
+                }
+                else if (Vector3.Distance(startEnd.position, otherPipe.endEnd.position) <= snapDistance)
+                {
+                    SnapToOtherPipe(otherPipe.endEnd);
+                    return;
+                }
+            }
+        }
+
+        // Also check the other end of this pipe
+        nearbyPipes = Physics.OverlapSphere(endEnd.position, snapDistance, pickable);
+
+        foreach (Collider other in nearbyPipes)
+        {
+            Pipe otherPipe = other.GetComponent<Pipe>();
+
+            if (otherPipe && otherPipe)
+            {
+                // Check if this pipe's endEnd is close enough to the other pipe's ends
+                if (Vector3.Distance(endEnd.position, otherPipe.startEnd.position) <= snapDistance)
+                {
+                    SnapToOtherPipe(otherPipe.startEnd);
+                    return;
+                }
+                else if (Vector3.Distance(endEnd.position, otherPipe.endEnd.position) <= snapDistance)
+                {
+                    SnapToOtherPipe(otherPipe.endEnd);
+                    return;
+                }
             }
         }
     }
 
-    void StartRotation()
+    void SnapToOtherPipe(Transform targetEnd)
     {
-        isRotating = true;
-        Cursor.lockState = CursorLockMode.Locked;  // Lock the cursor
-        Cursor.visible = false;                    // Hide the cursor
-        initialMousePosition = Input.mousePosition;
+        // Snap this pipe's closest end to the other pipe's end
+        transform.position = targetEnd.position - (startEnd.position - transform.position);  // Adjust based on the connection point
+        transform.rotation = targetEnd.rotation;
+
+        LockPipe();  // Lock the pipe in place
     }
 
-    void StopRotation()
+    void LockPipe()
     {
-        isRotating = false;
-        Cursor.lockState = CursorLockMode.None;    // Unlock the cursor
-        Cursor.visible = true;                     // Show the cursor
+        isSnapped = true;
+        rb.isKinematic = true;  // Disable physics to "lock" the pipe in place
+        isBeingHeld = false;     // Pipe is no longer being held by the player
+        Debug.Log("Pipe locked in place!");
     }
 
-    void RotatePipe()
-    {
-        // Get mouse delta movement
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
-
-        // Apply rotation based on mouse movement
-        // Rotates around Y axis based on horizontal mouse movement, and around X axis based on vertical movement
-        transform.Rotate(Vector3.up, -mouseX * rotationSpeed * Time.deltaTime, Space.World);   // Rotate around Y axis
-        transform.Rotate(Vector3.right, mouseY * rotationSpeed * Time.deltaTime, Space.World); // Rotate around X axis
-    }
-
-    // Call this function when the player grabs or releases the pipe
     public void SetHeldState(bool held)
     {
         isBeingHeld = held;
 
         if (held)
         {
-            rb.isKinematic = true;  // Disable physics while being held
+            rb.isKinematic = false;  // Enable physics while being held
         }
-        else
+        else if (!isSnapped)
         {
-            rb.isKinematic = false;  // Enable physics again when dropped
-            StopRotation();          // Ensure rotation stops when pipe is released
+            rb.isKinematic = false;  // Enable physics again when dropped, if not snapped
         }
     }
 }
