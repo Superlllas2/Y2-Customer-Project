@@ -243,7 +243,7 @@ Transform:
   m_GameObject: {fileID: 260936708}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.025, z: 0}
+  m_LocalPosition: {x: 0, y: -0.0245, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -274,7 +274,7 @@ Transform:
   m_GameObject: {fileID: 264912548}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.025, z: 0}
+  m_LocalPosition: {x: 0, y: -0.0245, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -293,7 +293,7 @@ GameObject:
   - component: {fileID: 305789331}
   - component: {fileID: 305789330}
   m_Layer: 0
-  m_Name: Cube (1)
+  m_Name: House
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -669,7 +669,7 @@ Transform:
   m_GameObject: {fileID: 701627813}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.025, z: 0}
+  m_LocalPosition: {x: 0, y: 0.0245, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -699,6 +699,8 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.5
   isSnapped: 0
+  nextPipe: {fileID: 0}
+  isConnected: 0
 --- !u!114 &706729481
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -792,7 +794,7 @@ Transform:
   m_GameObject: {fileID: 747387758}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.025, z: 0}
+  m_LocalPosition: {x: 0, y: 0.0245, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1585,8 +1587,10 @@ MonoBehaviour:
   pickable:
     serializedVersion: 2
     m_Bits: 128
-  snapDistance: 0.3
+  snapDistance: 0.5
   isSnapped: 0
+  nextPipe: {fileID: 0}
+  isConnected: 0
 --- !u!114 &1084788439
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1874,8 +1878,10 @@ MonoBehaviour:
   pickable:
     serializedVersion: 2
     m_Bits: 128
-  snapDistance: 0.3
+  snapDistance: 0.5
   isSnapped: 0
+  nextPipe: {fileID: 0}
+  isConnected: 0
 --- !u!114 &1218512399
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2207,7 +2213,7 @@ Transform:
   m_GameObject: {fileID: 1291581418}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.025, z: 0}
+  m_LocalPosition: {x: 0, y: -0.0245, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2303,8 +2309,10 @@ MonoBehaviour:
   pickable:
     serializedVersion: 2
     m_Bits: 128
-  snapDistance: 0.3
+  snapDistance: 0.5
   isSnapped: 0
+  nextPipe: {fileID: 0}
+  isConnected: 0
 --- !u!1 &1441585107
 GameObject:
   m_ObjectHideFlags: 0
@@ -2361,7 +2369,7 @@ Transform:
   m_GameObject: {fileID: 1542902812}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.025, z: 0}
+  m_LocalPosition: {x: 0, y: 0.0245, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2392,7 +2400,7 @@ Transform:
   m_GameObject: {fileID: 1591715471}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.025, z: 0}
+  m_LocalPosition: {x: 0, y: -0.0245, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2423,7 +2431,7 @@ Transform:
   m_GameObject: {fileID: 1874058020}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.025, z: 0}
+  m_LocalPosition: {x: 0, y: 0.0245, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
