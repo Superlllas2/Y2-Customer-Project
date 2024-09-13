@@ -10,7 +10,11 @@ public class Pipe : MonoBehaviour
     private bool isBeingHeld = false;  // Is the pipe currently being held by the player?
     public bool isSnapped = false;    // Is the pipe snapped and connected to another object?
     private Rigidbody rb;
-
+    
+    // The next pipe in the series
+    public Pipe nextPipe;
+    public bool isConnected = false;
+    
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -39,12 +43,12 @@ public class Pipe : MonoBehaviour
                 // Check if this pipe's startEnd is close enough to the other pipe's ends
                 if (Vector3.Distance(startEnd.position, otherPipe.startEnd.position) <= snapDistance)
                 {
-                    SnapToOtherPipe(otherPipe.startEnd);
+                    SnapToOtherPipe(otherPipe.startEnd, otherPipe);
                     return;
                 }
                 else if (Vector3.Distance(startEnd.position, otherPipe.endEnd.position) <= snapDistance)
                 {
-                    SnapToOtherPipe(otherPipe.endEnd);
+                    SnapToOtherPipe(otherPipe.endEnd, otherPipe);
                     return;
                 }
             }
@@ -62,19 +66,19 @@ public class Pipe : MonoBehaviour
                 // Check if this pipe's endEnd is close enough to the other pipe's ends
                 if (Vector3.Distance(endEnd.position, otherPipe.startEnd.position) <= snapDistance)
                 {
-                    SnapToOtherPipe(otherPipe.startEnd);
+                    SnapToOtherPipe(otherPipe.startEnd, otherPipe);
                     return;
                 }
                 else if (Vector3.Distance(startEnd.position, otherPipe.endEnd.position) <= snapDistance)
                 {
-                    SnapToOtherPipe(otherPipe.endEnd);
+                    SnapToOtherPipe(otherPipe.endEnd, otherPipe);
                     return;
                 }
             }
         }
     }
 
-    void SnapToOtherPipe(Transform targetEnd)
+    void SnapToOtherPipe(Transform targetEnd, Pipe otherPipe)
     {
         // Check if we are connecting startEnd or endEnd
         if (Vector3.Distance(startEnd.position, targetEnd.position) <= snapDistance)
@@ -91,9 +95,14 @@ public class Pipe : MonoBehaviour
             transform.position = targetEnd.position - (endEnd.position - transform.position);  // Correct position
             transform.rotation = targetEnd.rotation;
         }
+        
+        
+        nextPipe = otherPipe;
+        isConnected = true;
 
-        LockPipe();  // Lock the pipe in place
-        Debug.Log("isSnapped" + isSnapped + "rb.isKinematic" + rb.isKinematic + "isBeingHeld" + isBeingHeld);
+        LockPipe();
+        // Debug.Log("isSnapped" + isSnapped + "rb.isKinematic" + rb.isKinematic + "isBeingHeld" + isBeingHeld);
+        CheckSeriesCompletion();
     }
 
     void LockPipe()
@@ -101,7 +110,7 @@ public class Pipe : MonoBehaviour
         isSnapped = true;
         rb.isKinematic = true;  // Disable physics to "lock" the pipe in place
         isBeingHeld = false;     // Pipe is no longer being held by the player
-        Debug.Log("Pipe locked in place!");
+        // Debug.Log("Pipe locked in place!");
     }
 
     public void SetHeldState(bool held)
@@ -119,6 +128,24 @@ public class Pipe : MonoBehaviour
         else
         {
             rb.isKinematic = true;  // Disable physics when snapped to prevent further movement
+        }
+    }
+    
+    void CheckSeriesCompletion()
+    {
+        Pipe currentPipe = this;
+        int pipeCount = 1;
+        
+        while (currentPipe.nextPipe)
+        {
+            pipeCount++;
+            currentPipe = currentPipe.nextPipe;
+        }
+        
+        //TODO: change the hardcoded value
+        if (pipeCount >= 4)
+        {
+            Debug.Log("Connection is successful! Water is at home!");
         }
     }
 }
