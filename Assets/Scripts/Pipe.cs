@@ -80,30 +80,44 @@ public class Pipe : MonoBehaviour
 
     void SnapToOtherPipe(Transform targetEnd, Pipe otherPipe)
     {
-        // Check if we are connecting startEnd or endEnd
+        // If we're connecting startEnd to the target end
         if (Vector3.Distance(startEnd.position, targetEnd.position) <= snapDistance)
         {
-            // Align the start of this pipe to the target end
-            Vector3 connectionDirection = (targetEnd.position - endEnd.position).normalized;
-            transform.position = targetEnd.position - (startEnd.position - transform.position);  // Correct position
-            transform.rotation = targetEnd.rotation;
+            // Move the startEnd of the current pipe to the targetEnd's exact position
+            AlignToPoint(startEnd, targetEnd, otherPipe);
         }
+        // If we're connecting endEnd to the target end
         else if (Vector3.Distance(endEnd.position, targetEnd.position) <= snapDistance)
         {
-            // Align the end of this pipe to the target start
-            Vector3 connectionDirection = (targetEnd.position - startEnd.position).normalized;
-            transform.position = targetEnd.position - (endEnd.position - transform.position);  // Correct position
-            transform.rotation = targetEnd.rotation;
+            // Move the endEnd of the current pipe to the targetEnd's exact position
+            AlignToPoint(endEnd, targetEnd, otherPipe);
         }
-        
-        
+
         nextPipe = otherPipe;
         isConnected = true;
 
-        LockPipe();
-        // Debug.Log("isSnapped" + isSnapped + "rb.isKinematic" + rb.isKinematic + "isBeingHeld" + isBeingHeld);
-        CheckSeriesCompletion();
+        LockPipe();  // Lock the pipe in place
+        CheckSeriesCompletion();  // Check if the series is complete
     }
+    
+    void AlignToPoint(Transform heldEnd, Transform targetEnd, Pipe otherPipe)
+    {
+        // Calculate the offset from the center of the pipe to the held end
+        Vector3 offset = heldEnd.position - transform.position;  // Pivot is at the center
+
+        // Move the pipe such that the end aligns with the target
+        transform.position = targetEnd.position - offset;
+
+        // Adjust rotation if necessary
+        Vector3 heldDirection = (heldEnd == startEnd) ? (endEnd.position - startEnd.position).normalized : (startEnd.position - endEnd.position).normalized;
+        Vector3 targetDirection = (targetEnd == otherPipe.startEnd) ? (otherPipe.endEnd.position - otherPipe.startEnd.position).normalized : (otherPipe.startEnd.position - otherPipe.endEnd.position).normalized;
+
+        Quaternion rotationAdjustment = Quaternion.FromToRotation(heldDirection, targetDirection);
+        transform.rotation = rotationAdjustment * transform.rotation;
+    }
+
+
+
 
     void LockPipe()
     {
