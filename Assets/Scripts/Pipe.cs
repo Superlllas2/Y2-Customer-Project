@@ -15,6 +15,8 @@ public class Pipe : MonoBehaviour
     public bool isSnapped = false;     // Is the pipe snapped and connected to another object?
     private Rigidbody rb;
 
+    public Vector3[] connectionDirections;
+    
     // The next pipe in the series
     public Pipe nextPipe;
     public bool isConnected = false;
@@ -33,6 +35,7 @@ public class Pipe : MonoBehaviour
         }
     }
 
+    
     // Check if the held pipe is close enough to connect to another pipe
     void CheckForConnection()
     {
@@ -52,12 +55,14 @@ public class Pipe : MonoBehaviour
                     AlignAndSnapPipe(otherPipe.startEnd, otherPipe, startEnd);
                     return;
                 }
-                if (Vector3.Distance(startEnd.position, otherPipe.endEnd.position) <= snapDistance)
-                {
-                    Debug.Log("startEnd.position, otherPipe.endEnd.position");
-                    AlignAndSnapPipe(otherPipe.endEnd, otherPipe, startEnd);
-                    return;
-                }
+                // --------
+                // if (Vector3.Distance(startEnd.position, otherPipe.endEnd.position) <= snapDistance)
+                // {
+                //     Debug.Log("startEnd.position, otherPipe.endEnd.position");
+                //     AlignAndSnapPipe(otherPipe.endEnd, otherPipe, startEnd);
+                //     return;
+                // }
+                // --------
             }
         }
 
@@ -70,13 +75,15 @@ public class Pipe : MonoBehaviour
 
             if (otherPipe && otherPipe != this)
             {
-                // Check if this pipe's endEnd is close enough to the other pipe's ends
-                if (Vector3.Distance(endEnd.position, otherPipe.startEnd.position) <= snapDistance)
-                {
-                    Debug.Log("endEnd.position, otherPipe.startEnd.position");
-                    AlignAndSnapPipe(otherPipe.startEnd, otherPipe, endEnd);
-                    return;
-                }
+                // --------
+                // // Check if this pipe's endEnd is close enough to the other pipe's ends
+                // if (Vector3.Distance(endEnd.position, otherPipe.startEnd.position) <= snapDistance)
+                // {
+                //     Debug.Log("endEnd.position, otherPipe.startEnd.position");
+                //     AlignAndSnapPipe(otherPipe.startEnd, otherPipe, endEnd);
+                //     return;
+                // }
+                // --------
                 if (Vector3.Distance(endEnd.position, otherPipe.endEnd.position) <= snapDistance)
                 {
                     Debug.Log("endEnd.position, otherPipe.endEnd.position");
@@ -90,25 +97,69 @@ public class Pipe : MonoBehaviour
     // Align and snap the held pipe to the target pipe
     void AlignAndSnapPipe(Transform endPositionOnTheOtherPipe, Pipe otherPipe, Transform endPositionThisPipe)
     {
-        SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+        int bestDirection = 0;
+        float bestDot = float.MinValue;
+        Vector3 toOtherPipe = endPositionOnTheOtherPipe.position - transform.position; 
+        Debug.Log("Desired connection direction: "+toOtherPipe);
+        for (int i = 0; i < connectionDirections.Length; i++)
+        {
+            Vector3 worldDir = transform.TransformDirection(connectionDirections[i]);
+            float newDot = Vector3.Dot(worldDir, toOtherPipe);
+            Debug.Log("Direction "+worldDir+" gives dot "+newDot);
+            if (newDot > bestDot)
+            {
+                bestDot = newDot;
+                bestDirection = i;
+            }
+        }
+        Debug.Log("Connection direction for pipe: "+connectionDirections[bestDirection]);
+        
+        // hardcoded for now - TODO: Pipe script has method that returns this (world space) direction when a connection point is given
+        Vector3 connectionDirection = new Vector3(0, 0, -1);
+        // if our best direction is say (1,0,0), then we want to say: transform.right = -connectionDirection;
+        // if our best direction is say (0,0,-1), then we want to say: transform.forward = connectionDirection;
+
+        if (connectionDirections[bestDirection].x>=0.99f)
+        {
+            transform.right = -connectionDirection;
+        } else  if (connectionDirections[bestDirection].z>=0.99f)
+        {
+            transform.forward = -connectionDirection;
+        } else  if (connectionDirections[bestDirection].z<=-0.99f)
+        {
+            transform.forward = connectionDirection;
+        } // 3 more cases
+        
+        // TODO: translate (after rotating) (should be easy)
+        
+        
+        //
+        //
+        // Quaternion desired = Quaternion.LookRotation(-connectionDirection);
+        // Quaternion current = Quaternion.LookRotation(connectionDirections[bestDirection]);
+        // Quaternion fromTo = desired * Quaternion.Inverse(current);
+        // float angle; 
+        // fromTo.ToAngleAxis(out angle, out Vector3 whatever);
+        // Debug.Log("Needed rotation: "+angle);
+        // transform.rotation = fromTo * transform.rotation;
+        
+        
+        // SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
 
         // Mark the pipes as connected
         nextPipe = otherPipe;
         isConnected = true;
         LockPipe();  // Lock the pipe in place
-        CheckSeriesCompletion();  // Check if the series is complete
     }
 
     // Snap the held pipe's end to the target end
     void SnapPipeToTarget(Transform endPositionOnTheOtherPipe, Pipe otherPipe, Transform endPositionThisPipe)
     {
         Vector3 offset = transform.position - endPositionOnTheOtherPipe.position;
-        // Debug.DrawLine(endPositionThisPipe.position, endPositionOnTheOtherPipe.position, Color.cyan, 5.0f);
- 
         StartCoroutine(RotateAfterOneFrame(offset, otherPipe.transform.rotation, endPositionThisPipe, endPositionOnTheOtherPipe));
     }
 
-    // Credit to Yvans
+    // Credit to: Yvans
     private IEnumerator RotateAfterOneFrame(Vector3 moveTo, Quaternion rotateTo,Transform mine, Transform targetEnd)
     {
         yield return null;
@@ -146,24 +197,6 @@ public class Pipe : MonoBehaviour
         else
         {
             rb.isKinematic = true;  // Disable physics when snapped to prevent further movement
-        }
-    }
-
-    // Check if the entire pipe series is connected
-    void CheckSeriesCompletion()
-    {
-        Pipe currentPipe = this;
-        int pipeCount = 1;
-
-        while (currentPipe.nextPipe)
-        {
-            pipeCount++;
-            currentPipe = currentPipe.nextPipe;
-        }
-
-        if (pipeCount >= 4)  // Adjust the pipe count as needed for your game
-        {
-            Debug.Log("Connection is successful! All pipes are connected.");
         }
     }
 }

@@ -531,6 +531,9 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.2
   isSnapped: 0
+  connectionDirections:
+  - {x: 0, y: 0, z: 1}
+  - {x: -1, y: 0, z: 0}
   nextPipe: {fileID: 0}
   isConnected: 0
 --- !u!54 &443464452
@@ -1149,6 +1152,7 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.2
   isSnapped: 0
+  connectionDirections: []
   nextPipe: {fileID: 0}
   isConnected: 0
 --- !u!114 &706729481
@@ -2186,6 +2190,9 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.2
   isSnapped: 0
+  connectionDirections:
+  - {x: 0, y: -1, z: 0}
+  - {x: 0, y: 1, z: 0}
   nextPipe: {fileID: 0}
   isConnected: 0
 --- !u!114 &1084788439
@@ -2509,6 +2516,7 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.2
   isSnapped: 0
+  connectionDirections: []
   nextPipe: {fileID: 0}
   isConnected: 0
 --- !u!114 &1218512399
@@ -2892,6 +2900,10 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.25
   isSnapped: 0
+  connectionDirections:
+  - {x: 1, y: 0, z: 0}
+  - {x: -1, y: 0, z: 0}
+  - {x: 0, y: 0, z: -1}
   nextPipe: {fileID: 0}
   isConnected: 0
 --- !u!54 &1299591506
@@ -3080,6 +3092,7 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.25
   isSnapped: 0
+  connectionDirections: []
   nextPipe: {fileID: 0}
   isConnected: 0
 --- !u!54 &1478570099
