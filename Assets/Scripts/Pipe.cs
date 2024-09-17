@@ -3,24 +3,24 @@ using UnityEngine;
 
 public class Pipe : MonoBehaviour
 {
-    public Transform startEnd;         // One end of the pipe
-    public Transform endEnd;           // The other end of the pipe
+    public Transform startEnd; // One end of the pipe
+    public Transform endEnd; // The other end of the pipe
 
     public Transform[] ends; //TODO changing here so you can have multiple ends and small code. Nice :)
-    
-    public LayerMask pickable;         // Layer for detecting other pipes
-    public float snapDistance = 1f;    // Distance threshold for snapping pipes together
 
-    private bool isBeingHeld = false;  // Is the pipe currently being held by the player?
-    public bool isSnapped = false;     // Is the pipe snapped and connected to another object?
+    public LayerMask pickable; // Layer for detecting other pipes
+    public float snapDistance = 1f; // Distance threshold for snapping pipes together
+
+    private bool isBeingHeld = false; // Is the pipe currently being held by the player?
+    public bool isSnapped = false; // Is the pipe snapped and connected to another object?
     private Rigidbody rb;
 
     public Vector3[] connectionDirections;
-    
+
     // The next pipe in the series
     public Pipe nextPipe;
     public bool isConnected = false;
-    
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -35,7 +35,7 @@ public class Pipe : MonoBehaviour
         }
     }
 
-    
+
     // Check if the held pipe is close enough to connect to another pipe
     void CheckForConnection()
     {
@@ -51,7 +51,7 @@ public class Pipe : MonoBehaviour
                 // Check if this pipe's startEnd is close enough to the other pipe's ends
                 if (Vector3.Distance(startEnd.position, otherPipe.startEnd.position) <= snapDistance)
                 {
-                    Debug.Log("startEnd.position, otherPipe.startEnd.position");
+                    // Debug.Log("startEnd.position, otherPipe.startEnd.position");
                     AlignAndSnapPipe(otherPipe.startEnd, otherPipe, startEnd);
                     return;
                 }
@@ -86,8 +86,8 @@ public class Pipe : MonoBehaviour
                 // --------
                 if (Vector3.Distance(endEnd.position, otherPipe.endEnd.position) <= snapDistance)
                 {
-                    Debug.Log("endEnd.position, otherPipe.endEnd.position");
-                    AlignAndSnapPipe(otherPipe.endEnd, otherPipe, endEnd);
+                    // Debug.Log("endEnd.position, otherPipe.endEnd.position");
+                    // AlignAndSnapPipe(otherPipe.endEnd, otherPipe, endEnd);
                     return;
                 }
             }
@@ -99,42 +99,61 @@ public class Pipe : MonoBehaviour
     {
         int bestDirection = 0;
         float bestDot = float.MinValue;
-        Vector3 toOtherPipe = endPositionOnTheOtherPipe.position - transform.position; 
-        Debug.Log("Desired connection direction: "+toOtherPipe);
+        Vector3 toOtherPipe = endPositionOnTheOtherPipe.position - transform.position;
+        // Debug.Log("Desired connection direction: " + toOtherPipe);
         for (int i = 0; i < connectionDirections.Length; i++)
         {
             Vector3 worldDir = transform.TransformDirection(connectionDirections[i]);
             float newDot = Vector3.Dot(worldDir, toOtherPipe);
-            Debug.Log("Direction "+worldDir+" gives dot "+newDot);
+            // Debug.Log("Direction " + worldDir + " gives dot " + newDot);
             if (newDot > bestDot)
             {
                 bestDot = newDot;
                 bestDirection = i;
             }
         }
-        Debug.Log("Connection direction for pipe: "+connectionDirections[bestDirection]);
-        
+
+        Debug.Log("Connection direction for pipe: " + connectionDirections[bestDirection]);
+
         // hardcoded for now - TODO: Pipe script has method that returns this (world space) direction when a connection point is given
-        Vector3 connectionDirection = new Vector3(0, 0, -1);
+        Vector3 connectionDirection = new Vector3(0, 0, 0);
         // if our best direction is say (1,0,0), then we want to say: transform.right = -connectionDirection;
         // if our best direction is say (0,0,-1), then we want to say: transform.forward = connectionDirection;
 
-        if (connectionDirections[bestDirection].x>=0.99f)
+        if (connectionDirections[bestDirection].x >= 0.99f)
         {
             transform.right = -connectionDirection;
-        } else  if (connectionDirections[bestDirection].z>=0.99f)
+            Debug.Log("turn 0");
+        }
+        else if (connectionDirections[bestDirection].z >= 0.99f)
         {
             transform.forward = -connectionDirection;
-        } else  if (connectionDirections[bestDirection].z<=-0.99f)
+            Debug.Log("turn 1");
+        }
+        else if (connectionDirections[bestDirection].z <= -0.99f)
         {
             transform.forward = connectionDirection;
-        } // 3 more cases
-        
+            Debug.Log("turn 2");
+        }
+        else if (connectionDirections[bestDirection].x >= -0.99f)
+        {
+            transform.right = connectionDirection;
+            Debug.Log("turn 3");
+        }
+        else if (connectionDirections[bestDirection].y >= 0.99f)
+        {
+            transform.up = -connectionDirection;
+            Debug.Log("turn 4");
+        }
+        else if (connectionDirections[bestDirection].y >= -0.99f)
+        {
+            transform.up = connectionDirection;
+            Debug.Log("turn 5");
+            Debug.Log(connectionDirection);
+        }
+
         // TODO: translate (after rotating) (should be easy)
         
-        
-        //
-        //
         // Quaternion desired = Quaternion.LookRotation(-connectionDirection);
         // Quaternion current = Quaternion.LookRotation(connectionDirections[bestDirection]);
         // Quaternion fromTo = desired * Quaternion.Inverse(current);
@@ -142,25 +161,26 @@ public class Pipe : MonoBehaviour
         // fromTo.ToAngleAxis(out angle, out Vector3 whatever);
         // Debug.Log("Needed rotation: "+angle);
         // transform.rotation = fromTo * transform.rotation;
-        
-        
+
+
         // SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
 
         // Mark the pipes as connected
         nextPipe = otherPipe;
         isConnected = true;
-        LockPipe();  // Lock the pipe in place
+        LockPipe(); // Lock the pipe in place
     }
 
     // Snap the held pipe's end to the target end
     void SnapPipeToTarget(Transform endPositionOnTheOtherPipe, Pipe otherPipe, Transform endPositionThisPipe)
     {
         Vector3 offset = transform.position - endPositionOnTheOtherPipe.position;
-        StartCoroutine(RotateAfterOneFrame(offset, otherPipe.transform.rotation, endPositionThisPipe, endPositionOnTheOtherPipe));
+        StartCoroutine(RotateAfterOneFrame(offset, otherPipe.transform.rotation, endPositionThisPipe,
+            endPositionOnTheOtherPipe));
     }
 
     // Credit to: Yvans
-    private IEnumerator RotateAfterOneFrame(Vector3 moveTo, Quaternion rotateTo,Transform mine, Transform targetEnd)
+    private IEnumerator RotateAfterOneFrame(Vector3 moveTo, Quaternion rotateTo, Transform mine, Transform targetEnd)
     {
         yield return null;
         transform.rotation = rotateTo;
@@ -177,8 +197,8 @@ public class Pipe : MonoBehaviour
     void LockPipe()
     {
         isSnapped = true;
-        rb.isKinematic = true;  // Disable physics to lock the pipe in place
-        isBeingHeld = false;     // Pipe is no longer being held by the player
+        rb.isKinematic = true; // Disable physics to lock the pipe in place
+        isBeingHeld = false; // Pipe is no longer being held by the player
     }
 
     // Set whether the pipe is being held or not
@@ -188,15 +208,15 @@ public class Pipe : MonoBehaviour
 
         if (held)
         {
-            rb.isKinematic = false;  // Enable physics while being held
+            rb.isKinematic = false; // Enable physics while being held
         }
         else if (!isSnapped)
         {
-            rb.isKinematic = false;  // Enable physics when dropped, if not snapped
+            rb.isKinematic = false; // Enable physics when dropped, if not snapped
         }
         else
         {
-            rb.isKinematic = true;  // Disable physics when snapped to prevent further movement
+            rb.isKinematic = true; // Disable physics when snapped to prevent further movement
         }
     }
 }
