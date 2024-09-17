@@ -19,8 +19,6 @@ public class Pipe : MonoBehaviour
     public Pipe nextPipe;
     public bool isConnected = false;
     
-    
-
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -92,12 +90,6 @@ public class Pipe : MonoBehaviour
     // Align and snap the held pipe to the target pipe
     void AlignAndSnapPipe(Transform endPositionOnTheOtherPipe, Pipe otherPipe, Transform endPositionThisPipe)
     {
-        // Step 1: Calculate the direction vector of the target pipe
-        // Vector3 targetVector = (otherPipe.endEnd.position - otherPipe.startEnd.position).normalized;
-
-        // Step 2: Align the held pipe's center to the target vector
-        // AlignPipeToVector(targetVector);
-        // Step 3: Snap the held pipe's end to the target pipe's end
         SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
 
         // Mark the pipes as connected
@@ -105,13 +97,6 @@ public class Pipe : MonoBehaviour
         isConnected = true;
         LockPipe();  // Lock the pipe in place
         CheckSeriesCompletion();  // Check if the series is complete
-    }
-
-    // Align the center of the held pipe along the target vector
-    void AlignPipeToVector(Vector3 targetVector)
-    {
-        // Simply adjust the position and alignment to the target vector, assuming the pivot is already at the center
-        transform.rotation = Quaternion.LookRotation(targetVector);
     }
 
     // Snap the held pipe's end to the target end
@@ -123,6 +108,7 @@ public class Pipe : MonoBehaviour
         StartCoroutine(RotateAfterOneFrame(offset, otherPipe.transform.rotation, endPositionThisPipe, endPositionOnTheOtherPipe));
     }
 
+    // Credit to Yvans
     private IEnumerator RotateAfterOneFrame(Vector3 moveTo, Quaternion rotateTo,Transform mine, Transform targetEnd)
     {
         yield return null;
