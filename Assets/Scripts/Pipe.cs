@@ -117,6 +117,7 @@ public class Pipe : MonoBehaviour
 
         // hardcoded for now - TODO: Pipe script has method that returns this (world space) direction when a connection point is given
         Vector3 connectionDirection = new Vector3(0, 0, 0);
+        // Vector3 connectionDirection = (endPositionOnTheOtherPipe.position - endPositionThisPipe.position).normalized;
         // if our best direction is say (1,0,0), then we want to say: transform.right = -connectionDirection;
         // if our best direction is say (0,0,-1), then we want to say: transform.forward = connectionDirection;
 
@@ -163,7 +164,7 @@ public class Pipe : MonoBehaviour
         // transform.rotation = fromTo * transform.rotation;
 
 
-        // SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+        SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
 
         // Mark the pipes as connected
         nextPipe = otherPipe;
@@ -180,18 +181,31 @@ public class Pipe : MonoBehaviour
     }
 
     // Credit to: Yvans
+// Existing RotateAfterOneFrame method, now with the translation step
     private IEnumerator RotateAfterOneFrame(Vector3 moveTo, Quaternion rotateTo, Transform mine, Transform targetEnd)
     {
+        // Wait one frame before applying rotation
         yield return null;
+
+        // Apply rotation first
         transform.rotation = rotateTo;
+
+        // Wait for the next frame to complete the translation
         yield return null;
+
+        // Calculate half the distance from the center of the pipe to its connecting end
         var halfDistance = transform.position - mine.position;
+
+        // Now calculate the offset from where the end is currently to where it should be
         var offset = transform.position - targetEnd.position;
-        // Debug.Log($"NEW Offset -> {offset}.");
+
+        // Apply the translation after rotation to align the pipe ends perfectly
         transform.position -= (offset + halfDistance);
-        yield return null;
+
+        // Ensure the pipe is locked in place after aligning it
         LockPipe();
     }
+
 
     // Lock the pipe in place by making it kinematic and disabling further movement
     void LockPipe()
