@@ -164,7 +164,10 @@ public class Pipe : MonoBehaviour
         // transform.rotation = fromTo * transform.rotation;
 
 
-        SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+        if (connectionDirections.Length == 2)
+        {
+            SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+        }
 
         // Mark the pipes as connected
         nextPipe = otherPipe;
@@ -184,25 +187,14 @@ public class Pipe : MonoBehaviour
 // Existing RotateAfterOneFrame method, now with the translation step
     private IEnumerator RotateAfterOneFrame(Vector3 moveTo, Quaternion rotateTo, Transform mine, Transform targetEnd)
     {
-        // Wait one frame before applying rotation
         yield return null;
-
-        // Apply rotation first
         transform.rotation = rotateTo;
-
-        // Wait for the next frame to complete the translation
         yield return null;
-
-        // Calculate half the distance from the center of the pipe to its connecting end
         var halfDistance = transform.position - mine.position;
-
-        // Now calculate the offset from where the end is currently to where it should be
         var offset = transform.position - targetEnd.position;
-
-        // Apply the translation after rotation to align the pipe ends perfectly
+        // Debug.Log($"NEW Offset -> {offset}.");
         transform.position -= (offset + halfDistance);
-
-        // Ensure the pipe is locked in place after aligning it
+        yield return null;
         LockPipe();
     }
 
