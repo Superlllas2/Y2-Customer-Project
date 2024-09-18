@@ -166,7 +166,7 @@ public class Pipe : MonoBehaviour
 
         if (connectionDirections.Length == 2)
         {
-            SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+            // SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
         }
 
         // Mark the pipes as connected
