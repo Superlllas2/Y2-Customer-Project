@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Pipe : MonoBehaviour
 {
@@ -166,7 +167,10 @@ public class Pipe : MonoBehaviour
 
         if (connectionDirections.Length == 2)
         {
-            // SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+            SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+            Vector3 distanceDifference = endPositionOnTheOtherPipe.position - endPositionThisPipe.position;
+            transform.position += distanceDifference;
+
         }
 
         // Mark the pipes as connected
@@ -184,7 +188,6 @@ public class Pipe : MonoBehaviour
     }
 
     // Credit to: Yvans
-// Existing RotateAfterOneFrame method, now with the translation step
     private IEnumerator RotateAfterOneFrame(Vector3 moveTo, Quaternion rotateTo, Transform mine, Transform targetEnd)
     {
         yield return null;
