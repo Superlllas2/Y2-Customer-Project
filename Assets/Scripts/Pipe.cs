@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -6,7 +7,7 @@ public class Pipe : MonoBehaviour
 {
     public Transform startEnd; // One end of the pipe
     public Transform endEnd; // The other end of the pipe
-
+    
     public Transform[] ends; //TODO changing here so you can have multiple ends and small code. Nice :)
 
     public LayerMask pickable; // Layer for detecting other pipes
@@ -15,7 +16,7 @@ public class Pipe : MonoBehaviour
     private bool isBeingHeld = false; // Is the pipe currently being held by the player?
     public bool isSnapped = false; // Is the pipe snapped and connected to another object?
     private Rigidbody rb;
-
+    private String connectedAxis = null;
     public Vector3[] connectionDirections;
 
     // The next pipe in the series
@@ -125,31 +126,37 @@ public class Pipe : MonoBehaviour
         if (connectionDirections[bestDirection].x >= 0.99f)
         {
             transform.right = -connectionDirection;
+            connectedAxis = "X";
             Debug.Log("turn 0");
         }
         else if (connectionDirections[bestDirection].z >= 0.99f)
         {
             transform.forward = -connectionDirection;
+            connectedAxis = "Z";
             Debug.Log("turn 1");
         }
         else if (connectionDirections[bestDirection].z <= -0.99f)
         {
             transform.forward = connectionDirection;
+            connectedAxis = "Z";
             Debug.Log("turn 2");
         }
         else if (connectionDirections[bestDirection].x >= -0.99f)
         {
             transform.right = connectionDirection;
+            connectedAxis = "X";
             Debug.Log("turn 3");
         }
         else if (connectionDirections[bestDirection].y >= 0.99f)
         {
             transform.up = -connectionDirection;
+            connectedAxis = "Y";
             Debug.Log("turn 4");
         }
         else if (connectionDirections[bestDirection].y >= -0.99f)
         {
             transform.up = connectionDirection;
+            connectedAxis = "Y";
             Debug.Log("turn 5");
             Debug.Log(connectionDirection);
         }
@@ -167,7 +174,7 @@ public class Pipe : MonoBehaviour
 
         if (connectionDirections.Length == 2)
         {
-            SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+            // SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
             Vector3 distanceDifference = endPositionOnTheOtherPipe.position - endPositionThisPipe.position;
             transform.position += distanceDifference;
 
