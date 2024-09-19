@@ -16,12 +16,13 @@ public class Pipe : MonoBehaviour
     private bool isBeingHeld = false; // Is the pipe currently being held by the player?
     public bool isSnapped = false; // Is the pipe snapped and connected to another object?
     private Rigidbody rb;
-    private String connectedAxis = null;
+    public String connectedAxis = null;
     public Vector3[] connectionDirections;
 
     // The next pipe in the series
     public Pipe nextPipe;
     public bool isConnected = false;
+    public PipeType pipeType;
 
     void Start()
     {
@@ -99,16 +100,16 @@ public class Pipe : MonoBehaviour
     // Align and snap the held pipe to the target pipe
     void AlignAndSnapPipe(Transform endPositionOnTheOtherPipe, Pipe otherPipe, Transform endPositionThisPipe)
     {
-        int bestDirection = 0;
-        float bestDot = float.MinValue;
-        Vector3 toOtherPipe = endPositionOnTheOtherPipe.position - transform.position;
+        var bestDirection = 0;
+        var bestDot = float.MinValue;
+        var toOtherPipe = endPositionOnTheOtherPipe.position - transform.position;
         // Debug.Log("Desired connection direction: " + toOtherPipe);
         for (int i = 0; i < connectionDirections.Length; i++)
         {
-            Vector3 worldDir = transform.TransformDirection(connectionDirections[i]);
-            float newDot = Vector3.Dot(worldDir, toOtherPipe);
+            var worldDir = transform.TransformDirection(connectionDirections[i]);
+            var newDot = Vector3.Dot(worldDir, toOtherPipe);
             // Debug.Log("Direction " + worldDir + " gives dot " + newDot);
-            if (newDot > bestDot)
+            if (newDot < bestDot)
             {
                 bestDot = newDot;
                 bestDirection = i;
@@ -171,15 +172,15 @@ public class Pipe : MonoBehaviour
         // Debug.Log("Needed rotation: "+angle);
         // transform.rotation = fromTo * transform.rotation;
 
-
-        if (connectionDirections.Length == 2)
+        if (pipeType == PipeType.Bend)
         {
-            // SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
             Vector3 distanceDifference = endPositionOnTheOtherPipe.position - endPositionThisPipe.position;
             transform.position += distanceDifference;
-
+        } else if (pipeType == PipeType.Straight)
+        {
+            SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
         }
-
+        
         // Mark the pipes as connected
         nextPipe = otherPipe;
         isConnected = true;

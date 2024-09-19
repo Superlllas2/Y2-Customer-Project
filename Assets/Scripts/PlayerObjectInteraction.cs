@@ -39,7 +39,7 @@ public class PlayerInteraction : MonoBehaviour
         }
 
         // Ray from the center of the screen
-        Ray ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
+        var ray = cam.ScreenPointToRay(new Vector3(Screen.width / 2, Screen.height / 2, 0));
         RaycastHit hit;
 
         // Perform a spherecast
@@ -107,6 +107,27 @@ public class PlayerInteraction : MonoBehaviour
                     grabbedPipe.SetHeldState(true);
                     grabbedObjectRb.useGravity = false;  // Disable gravity while holding the object
                     grabbedObjectRb.drag = 10;           // Setting drug to better the rotation
+                }
+            }
+            else
+            {
+                Debug.Log("You have clicked a pipe that has been attached");
+                Pipe hitPipe = hit.collider.GetComponent<Pipe>();
+                if (!hitPipe) return;
+                switch (hitPipe.connectedAxis)
+                {
+                    case "X":
+                        hitPipe.transform.eulerAngles += new Vector3(90, 0, 0);
+                        break;
+                    case "Y":
+                        hitPipe.transform.eulerAngles += new Vector3(0, 90, 0);
+                        break;
+                    case "Z":
+                        hitPipe.transform.eulerAngles += new Vector3(0, 0, 90);
+                        break;
+                    default:
+                        Debug.Log("Invalid axis");
+                        break;
                 }
             }
         }
