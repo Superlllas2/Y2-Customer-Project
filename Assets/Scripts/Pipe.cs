@@ -7,7 +7,7 @@ public class Pipe : MonoBehaviour
 {
     public Transform startEnd; // One end of the pipe
     public Transform endEnd; // The other end of the pipe
-    
+
     public Transform[] ends; //TODO changing here so you can have multiple ends and small code. Nice :)
 
     public LayerMask pickable; // Layer for detecting other pipes
@@ -90,7 +90,7 @@ public class Pipe : MonoBehaviour
                 if (Vector3.Distance(endEnd.position, otherPipe.endEnd.position) <= snapDistance)
                 {
                     // Debug.Log("endEnd.position, otherPipe.endEnd.position");
-                    // AlignAndSnapPipe(otherPipe.endEnd, otherPipe, endEnd);
+                    AlignAndSnapPipe(otherPipe.endEnd, otherPipe, endEnd);
                     return;
                 }
             }
@@ -116,11 +116,10 @@ public class Pipe : MonoBehaviour
             }
         }
 
-        Debug.Log("Connection direction for pipe: " + connectionDirections[bestDirection]);
+        // Debug.Log("Connection direction for pipe: " + connectionDirections[bestDirection]);
 
         // hardcoded for now - TODO: Pipe script has method that returns this (world space) direction when a connection point is given
         Vector3 connectionDirection = new Vector3(0, 0, 0);
-        // Vector3 connectionDirection = (endPositionOnTheOtherPipe.position - endPositionThisPipe.position).normalized;
         // if our best direction is say (1,0,0), then we want to say: transform.right = -connectionDirection;
         // if our best direction is say (0,0,-1), then we want to say: transform.forward = connectionDirection;
 
@@ -128,42 +127,36 @@ public class Pipe : MonoBehaviour
         {
             transform.right = -connectionDirection;
             connectedAxis = "X";
-            Debug.Log("turn 0");
         }
         else if (connectionDirections[bestDirection].z >= 0.99f)
         {
             transform.forward = -connectionDirection;
             connectedAxis = "Z";
-            Debug.Log("turn 1");
         }
         else if (connectionDirections[bestDirection].z <= -0.99f)
         {
             transform.forward = connectionDirection;
             connectedAxis = "Z";
-            Debug.Log("turn 2");
         }
         else if (connectionDirections[bestDirection].x >= -0.99f)
         {
             transform.right = connectionDirection;
             connectedAxis = "X";
-            Debug.Log("turn 3");
         }
         else if (connectionDirections[bestDirection].y >= 0.99f)
         {
             transform.up = -connectionDirection;
             connectedAxis = "Y";
-            Debug.Log("turn 4");
         }
         else if (connectionDirections[bestDirection].y >= -0.99f)
         {
             transform.up = connectionDirection;
             connectedAxis = "Y";
-            Debug.Log("turn 5");
-            Debug.Log(connectionDirection);
         }
 
+        // ----------------
         // TODO: translate (after rotating) (should be easy)
-        
+        // ----------------
         // Quaternion desired = Quaternion.LookRotation(-connectionDirection);
         // Quaternion current = Quaternion.LookRotation(connectionDirections[bestDirection]);
         // Quaternion fromTo = desired * Quaternion.Inverse(current);
@@ -171,16 +164,36 @@ public class Pipe : MonoBehaviour
         // fromTo.ToAngleAxis(out angle, out Vector3 whatever);
         // Debug.Log("Needed rotation: "+angle);
         // transform.rotation = fromTo * transform.rotation;
+        // ----------------
 
         if (pipeType == PipeType.Bend)
         {
             Vector3 distanceDifference = endPositionOnTheOtherPipe.position - endPositionThisPipe.position;
             transform.position += distanceDifference;
-        } else if (pipeType == PipeType.Straight)
-        {
-            SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
         }
-        
+        else if (pipeType == PipeType.Straight)
+        {
+            if (otherPipe.pipeType == PipeType.Bend)
+            {
+                SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+                // var childPivotPoint = endPositionThisPipe.position;
+                // transform.position = childPivotPoint;
+                // transform.RotateAround(childPivotPoint, Vector3.forward, -90);
+                // transform.rotation = Quaternion.Euler(0, 0, 90) * transform.rotation;
+                // transform.rotation = Quaternion.identity;
+                // transform.rotation *= Quaternion.Euler(0, 0, 0);
+                transform.SetParent(endPositionOnTheOtherPipe);
+                transform.parent.rotation = Quaternion.Euler(0, 0, -90) * transform.rotation;
+
+                // otherPipe.endEnd.Rotate(); // rotates the PARENT, which acts as a new pivot point
+                // transform.SetParent(null);
+            }
+            else
+            {
+                SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+            }
+        }
+
         // Mark the pipes as connected
         nextPipe = otherPipe;
         isConnected = true;
@@ -198,17 +211,12 @@ public class Pipe : MonoBehaviour
     // Credit to: Yvans
     private IEnumerator RotateAfterOneFrame(Vector3 moveTo, Quaternion rotateTo, Transform mine, Transform targetEnd)
     {
-        yield return null;
         transform.rotation = rotateTo;
-        yield return null;
         var halfDistance = transform.position - mine.position;
         var offset = transform.position - targetEnd.position;
-        // Debug.Log($"NEW Offset -> {offset}.");
         transform.position -= (offset + halfDistance);
         yield return null;
-        LockPipe();
     }
-
 
     // Lock the pipe in place by making it kinematic and disabling further movement
     void LockPipe()
