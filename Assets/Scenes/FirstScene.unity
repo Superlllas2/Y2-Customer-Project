@@ -175,6 +175,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7870690510958727661, guid: 5134cac8726455946939faeb3b5da47d, type: 3}
+      propertyPath: pipeType
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1564,11 +1568,13 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.2
   isSnapped: 0
+  connectedAxis: 
   connectionDirections:
   - {x: 0, y: -1, z: 0}
   - {x: 0, y: 1, z: 0}
   nextPipe: {fileID: 0}
   isConnected: 0
+  pipeType: 1
 --- !u!114 &1084788439
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1890,9 +1896,11 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.2
   isSnapped: 0
+  connectedAxis: 
   connectionDirections: []
   nextPipe: {fileID: 0}
   isConnected: 0
+  pipeType: 1
 --- !u!114 &1218512399
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2274,12 +2282,14 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.25
   isSnapped: 0
+  connectedAxis: 
   connectionDirections:
   - {x: 1, y: 0, z: 0}
   - {x: -1, y: 0, z: 0}
   - {x: 0, y: 0, z: -1}
   nextPipe: {fileID: 0}
   isConnected: 0
+  pipeType: 2
 --- !u!54 &1299591506
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2589,9 +2599,11 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.25
   isSnapped: 0
+  connectedAxis: 
   connectionDirections: []
   nextPipe: {fileID: 0}
   isConnected: 0
+  pipeType: 2
 --- !u!54 &1478570099
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2800,11 +2812,13 @@ MonoBehaviour:
     m_Bits: 128
   snapDistance: 0.2
   isSnapped: 0
+  connectedAxis: 
   connectionDirections:
   - {x: 0, y: 0, z: 1}
   - {x: -1, y: 0, z: 0}
   nextPipe: {fileID: 0}
   isConnected: 0
+  pipeType: 0
 --- !u!54 &1879022105
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3025,6 +3039,10 @@ PrefabInstance:
     - target: {fileID: 4409296603173110394, guid: bfda892f85a114ce8aaa635f4c4335a8, type: 3}
       propertyPath: m_Name
       value: Pipe (1) Movable
+      objectReference: {fileID: 0}
+    - target: {fileID: 7419840484589347438, guid: bfda892f85a114ce8aaa635f4c4335a8, type: 3}
+      propertyPath: pipeType
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
