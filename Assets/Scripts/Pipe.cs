@@ -118,41 +118,48 @@ public class Pipe : MonoBehaviour
 
         // Debug.Log("Connection direction for pipe: " + connectionDirections[bestDirection]);
 
-        // hardcoded for now - TODO: Pipe script has method that returns this (world space) direction when a connection point is given
-        Vector3 connectionDirection = new Vector3(0, 0, 0);
-        // if our best direction is say (1,0,0), then we want to say: transform.right = -connectionDirection;
-        // if our best direction is say (0,0,-1), then we want to say: transform.forward = connectionDirection;
-
-        if (connectionDirections[bestDirection].x >= 0.99f)
-        {
-            transform.right = -connectionDirection;
-            connectedAxis = "X";
-        }
-        else if (connectionDirections[bestDirection].z >= 0.99f)
-        {
-            transform.forward = -connectionDirection;
-            connectedAxis = "Z";
-        }
-        else if (connectionDirections[bestDirection].z <= -0.99f)
-        {
-            transform.forward = connectionDirection;
-            connectedAxis = "Z";
-        }
-        else if (connectionDirections[bestDirection].x >= -0.99f)
-        {
-            transform.right = connectionDirection;
-            connectedAxis = "X";
-        }
-        else if (connectionDirections[bestDirection].y >= 0.99f)
-        {
-            transform.up = -connectionDirection;
-            connectedAxis = "Y";
-        }
-        else if (connectionDirections[bestDirection].y >= -0.99f)
-        {
-            transform.up = connectionDirection;
-            connectedAxis = "Y";
-        }
+        // // hardcoded for now - TODO: Pipe script has method that returns this (world space) direction when a connection point is given
+        // Vector3 connectionDirection = new Vector3(0, 0, 0);
+        // // if our best direction is say (1,0,0), then we want to say: transform.right = -connectionDirection;
+        // // if our best direction is say (0,0,-1), then we want to say: transform.forward = connectionDirection;
+        //
+        // if (connectionDirections[bestDirection].x >= 0.99f)
+        // {
+        //     transform.right = -connectionDirection;
+        //     connectedAxis = "X";
+        //     Debug.Log("X");
+        // }
+        // else if (connectionDirections[bestDirection].z >= 0.99f)
+        // {
+        //     transform.forward = -connectionDirection;
+        //     connectedAxis = "Z";
+        //     Debug.Log("Z");
+        // }
+        // else if (connectionDirections[bestDirection].z <= -0.99f)
+        // {
+        //     transform.forward = connectionDirection;
+        //     connectedAxis = "Z";
+        //     Debug.Log("Z");
+        //
+        // }
+        // else if (connectionDirections[bestDirection].x >= -0.99f)
+        // {
+        //     transform.right = connectionDirection;
+        //     connectedAxis = "X";
+        //     Debug.Log("X");
+        // }
+        // else if (connectionDirections[bestDirection].y >= 0.99f)
+        // {
+        //     transform.up = -connectionDirection;
+        //     connectedAxis = "Y";
+        //     Debug.Log("Y");
+        // }
+        // else if (connectionDirections[bestDirection].y >= -0.99f)
+        // {
+        //     transform.up = connectionDirection;
+        //     connectedAxis = "Y";
+        //     Debug.Log("Y");
+        // }
 
         // ----------------
         // TODO: translate (after rotating) (should be easy)

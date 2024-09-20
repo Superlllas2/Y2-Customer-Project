@@ -4,7 +4,7 @@ public class HouseColorChange : MonoBehaviour
 {
     // Reference to the Renderer component
     private Renderer houseRenderer;
-
+    
     // Start is called before the first frame update
     void Start()
     {
