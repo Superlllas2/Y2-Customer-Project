@@ -29,7 +29,7 @@ public class WaterDetector : MonoBehaviour
         {
             var distanceToWater = Vector3.Distance(transform.position, closestWater.position);
 
-            Debug.Log("Closest water source is at a distance of: " + distanceToWater);
+            // Debug.Log("Closest water source is at a distance of: " + distanceToWater);
 
             if (distanceToWater <= detectionRange)
             {
@@ -78,6 +78,6 @@ public class WaterDetector : MonoBehaviour
         // {
         //     beepSound.Play();
         // }
-        Debug.Log("Getting closer to water");
+        // Debug.Log("Getting closer to water");
     }
 }
