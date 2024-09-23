@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 6611496209822397996}
   - component: {fileID: 8274704459873772878}
   - component: {fileID: 3244524105416073633}
+  - component: {fileID: 3422715826950488610}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -138,6 +139,19 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3422715826950488610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1396591896036934694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8872ee049a0d34030abbbbef8bdcae7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  waterSource: {fileID: 3437321596595611147, guid: fe07d86cc9a604b129be783fd8ba5913, type: 3}
 --- !u!1001 &5817899107326274516
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -149,6 +163,10 @@ PrefabInstance:
     - target: {fileID: 3973079426163002283, guid: 5134cac8726455946939faeb3b5da47d, type: 3}
       propertyPath: m_Name
       value: Pipe (2) Static
+      objectReference: {fileID: 0}
+    - target: {fileID: 3973079426163002283, guid: 5134cac8726455946939faeb3b5da47d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4352982050176471313, guid: 5134cac8726455946939faeb3b5da47d, type: 3}
       propertyPath: m_LocalScale.y

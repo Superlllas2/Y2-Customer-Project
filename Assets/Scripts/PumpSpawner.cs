@@ -24,8 +24,6 @@ public class Pump : MonoBehaviour
             PlacePump();
         }
     }
-    
-    
 
     private void PlacePump()
     {
