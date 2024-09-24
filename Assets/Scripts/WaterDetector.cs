@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 //Some of this Code was made by the designers (pls ignore it)
@@ -10,16 +11,26 @@ public class WaterDetector : MonoBehaviour
     public Transform[] waters; // Array of water objects
     // public AudioSource beepSound;
     public float detectionRange = 10f;
-    public float minBeepInterval = 0.1f; 
+    public float minBeepInterval = 0.1f;
     public float maxBeepInterval = 2f;
     public bool HoldingDetector = false;
+    public GameObject Water_Detector;
 
     private float beepTimer = 0f;
     private Transform closestWater; // The closest water source
 
     private void Start()
     {
+
         closestWater = null; // Start with no closest water source
+        if (Water_Detector == null)
+
+            Water_Detector = transform.Find("Water_Detector").gameObject; 
+
+        if (Water_Detector == null)
+        {
+            Debug.LogError("The Water_Detector reference is missing or not found in the hierarchy.");
+        }
     }
 
     private void Update()
@@ -65,10 +76,15 @@ public class WaterDetector : MonoBehaviour
             HoldingDetector = true;
             Debug.Log("true");
         }
-       // if (HoldingDetector == false)
-       // {
-           
-       // }
+
+        if (HoldingDetector == false)
+        {
+            Water_Detector.SetActive(HoldingDetector);
+        }
+        else if (HoldingDetector == true)
+        {
+            Water_Detector.SetActive(HoldingDetector);
+        }
     }
 
     private Transform FindClosestWater()
