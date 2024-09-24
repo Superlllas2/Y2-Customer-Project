@@ -31,7 +31,7 @@ public class PlayerInteraction : MonoBehaviour
             RotateObject();  // Handle object rotation based on mouse movement
 
             // Exit rotation mode when Shift is released
-            if (Input.GetKeyUp(KeyCode.LeftShift))
+            if (Input.GetKeyUp(KeyCode.R))
             {
                 ExitRotationMode();
             }
@@ -79,7 +79,7 @@ public class PlayerInteraction : MonoBehaviour
         // Move the grabbed object while the left mouse button is held
         if (grabbedObjectRb)
         {
-            if (Input.GetKeyDown(KeyCode.LeftShift))  // Enter rotation mode when Shift is pressed
+            if (Input.GetKeyDown(KeyCode.R))  // Enter rotation mode when Shift is pressed
             {
                 EnterRotationMode();
             }

@@ -5,10 +5,13 @@ using UnityEngine;
 public class Footsteps : MonoBehaviour
 {
     public AudioSource footstepsSound, sprintSound;
+    public PlayerMovement PlayerMovement;
+
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
+        // Corrected condition with parentheses
+        if ((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)) && PlayerMovement.grounded)
         {
             if (Input.GetKey(KeyCode.LeftShift))
             {
@@ -27,4 +30,5 @@ public class Footsteps : MonoBehaviour
             sprintSound.enabled = false;
         }
     }
+
 }
