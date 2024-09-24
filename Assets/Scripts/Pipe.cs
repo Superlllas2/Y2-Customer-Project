@@ -8,6 +8,8 @@ public class Pipe : MonoBehaviour
     public Transform startEnd; // One end of the pipe
     public Transform endEnd; // The other end of the pipe
 
+    public PlayerInteraction PlayerInteraction;
+
     public Transform[] ends; //TODO changing here so you can have multiple ends and small code. Nice :)
 
     public LayerMask pickable; // Layer for detecting other pipes
@@ -32,7 +34,7 @@ public class Pipe : MonoBehaviour
     void Update()
     {
         // Check for pipe connection only if the pipe is being held and not already snapped
-        if (isBeingHeld && !isSnapped)
+        if (isBeingHeld && !isSnapped && !PlayerInteraction.isInRotationMode)
         {
             CheckForConnection();
         }

@@ -14,7 +14,8 @@ public class PlayerInteraction : MonoBehaviour
     private Rigidbody grabbedObjectRb = null;  // Reference to the currently grabbed object
     private Camera cam;
     private Pipe grabbedPipe = null;
-    private bool isInRotationMode = false;     // Flag to check if the player is in rotation mode
+    public bool isInRotationMode = false;     // Flag to check if the player is in rotation mode
+    private bool canBeSnapped = false;
 
     public MonoBehaviour cameraController;
 
@@ -45,7 +46,7 @@ public class PlayerInteraction : MonoBehaviour
         // Perform a spherecast
         if (Physics.SphereCast(ray, sphereRadius, out hit, rayDistance, interactableLayer))
         {
-            ObjectOutline outlineScript = hit.collider.gameObject.GetComponent<ObjectOutline>();
+            var outlineScript = hit.collider.gameObject.GetComponent<ObjectOutline>();
 
             // If an object with an outline script is hit
             if (outlineScript)
@@ -82,6 +83,12 @@ public class PlayerInteraction : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.LeftShift))  // Enter rotation mode when Shift is pressed
             {
                 EnterRotationMode();
+                canBeSnapped = false;
+            }
+
+            if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                canBeSnapped = true;
             }
 
             MoveObject();  // Move the grabbed object
