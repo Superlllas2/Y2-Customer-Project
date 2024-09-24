@@ -8,6 +8,6 @@ public class SceneLoader : MonoBehaviour
     // Method to load a scene by name
     public void LoadScene()
     {
-        SceneManager.LoadScene("FirstScene");
+        SceneManager.LoadScene("Level-Scene");
     }
 }
