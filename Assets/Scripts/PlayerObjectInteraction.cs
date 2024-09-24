@@ -15,7 +15,6 @@ public class PlayerInteraction : MonoBehaviour
     private Camera cam;
     private Pipe grabbedPipe = null;
     public bool isInRotationMode = false;     // Flag to check if the player is in rotation mode
-    private bool canBeSnapped = false;
 
     public PlayerMovement PlayerMovement;
     public MonoBehaviour cameraController;
@@ -84,12 +83,10 @@ public class PlayerInteraction : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.R))  // Enter rotation mode when Shift is pressed
             {
                 EnterRotationMode();
-                canBeSnapped = false;
             }
 
             if (Input.GetKeyUp(KeyCode.LeftShift))
             {
-                canBeSnapped = true;
             }
 
             MoveObject();  // Move the grabbed object
