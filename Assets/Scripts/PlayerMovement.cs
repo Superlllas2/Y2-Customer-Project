@@ -2,11 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Movement")]
+    [Header("Movement")] 
     public float moveSpeed;
 
     public float groundDrag;
@@ -16,14 +15,14 @@ public class PlayerMovement : MonoBehaviour
     public float airMultiplier;
     private bool readyToJump;
 
-    [Header("Keybinds")]
+    [Header("Keybinds")] 
     public KeyCode jumpKey = KeyCode.Space;
-
-    [Header("Ground Check")]
+    
+    [Header("Ground Check")] 
     public float playerHeight;
     public LayerMask whatIsGround;
     private bool grounded;
-
+    
     public Transform orientation;
 
     private float horizontalInput;
@@ -33,22 +32,20 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody rb;
 
 
-
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         readyToJump = true;
-
     }
 
     private void Update()
     {
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
-
+        
         MyInput();
         SpeedControl();
-
+        
         if (grounded)
             rb.drag = groundDrag;
         else
@@ -64,7 +61,7 @@ public class PlayerMovement : MonoBehaviour
     {
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
-
+        
         // Jumping
         if (Input.GetKey(jumpKey) && readyToJump && grounded)
         {
@@ -77,9 +74,9 @@ public class PlayerMovement : MonoBehaviour
     void MovePlayer()
     {
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
-        if (grounded)
+        if(grounded)
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
-        else if (!grounded)
+        else if(!grounded)
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
 
     }
@@ -104,6 +101,4 @@ public class PlayerMovement : MonoBehaviour
     {
         readyToJump = true;
     }
-   
-
 }
