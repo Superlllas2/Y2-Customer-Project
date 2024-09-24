@@ -65,6 +65,10 @@ public class WaterDetector : MonoBehaviour
             HoldingDetector = true;
             Debug.Log("true");
         }
+       // if (HoldingDetector == false)
+       // {
+           
+       // }
     }
 
     private Transform FindClosestWater()
