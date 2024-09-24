@@ -44,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
 
     // Disable player movement
     public bool isDisabled = false;
+    private bool isMoving = false;
 
     // variable to control stamina regeneration delay after sprinting
     private float staminaRegenDelay = 1.5f;
@@ -82,6 +83,8 @@ public class PlayerMovement : MonoBehaviour
             rb.drag = groundDrag;
         else
             rb.drag = 0;
+        
+        CheckIfMoving();
     }
 
     private void FixedUpdate()
@@ -106,7 +109,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Sprinting (only if stamina is above a minimum threshold)
-        if (Input.GetKey(sprintKey) && currentStamina > 0.6f) // Requires at least 0.6 stamina to start sprinting
+        if (Input.GetKey(sprintKey) && currentStamina > 0.6f && isMoving && !isDisabled) // Requires at least 0.6 stamina to start sprinting
         {
             isSprinting = true;
         }
@@ -196,5 +199,10 @@ public class PlayerMovement : MonoBehaviour
     {
         // Update the stamina bar fill amount based on current stamina
         staminaBarImage.fillAmount = currentStamina / maxStamina;
+    }
+    
+    private void CheckIfMoving()
+    {
+        isMoving = horizontalInput != 0 || verticalInput != 0;
     }
 }
