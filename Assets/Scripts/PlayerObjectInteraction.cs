@@ -17,6 +17,7 @@ public class PlayerInteraction : MonoBehaviour
     public bool isInRotationMode = false;     // Flag to check if the player is in rotation mode
     private bool canBeSnapped = false;
 
+    public PlayerMovement PlayerMovement;
     public MonoBehaviour cameraController;
 
     void Start()
@@ -184,6 +185,7 @@ public class PlayerInteraction : MonoBehaviour
     // Enter Rotation Mode: Disable player/camera movement, hide the cursor, and start rotating
     void EnterRotationMode()
     {
+        PlayerMovement.isDisabled = true;
         isInRotationMode = true;
 
         if (cameraController)
@@ -196,6 +198,7 @@ public class PlayerInteraction : MonoBehaviour
     // Exit Rotation Mode: Restore player/camera movement, show the cursor
     void ExitRotationMode()
     {
+        PlayerMovement.isDisabled = false;
         isInRotationMode = false;
 
         if (cameraController)

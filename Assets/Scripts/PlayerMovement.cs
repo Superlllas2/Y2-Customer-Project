@@ -42,6 +42,9 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 moveDirection;
     private Rigidbody rb;
 
+    // Disable player movement
+    public bool isDisabled = false;
+
     // variable to control stamina regeneration delay after sprinting
     private float staminaRegenDelay = 1.5f;
     private float regenTimer = 0f;
@@ -57,6 +60,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        // Disable player input and stamina management when isDisabled is true
+        if (isDisabled) return;
+
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
         // Handle input
@@ -80,6 +86,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // Disable player movement when isDisabled is true
+        if (isDisabled) return;
+
         MovePlayer();
     }
 
@@ -97,7 +106,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Sprinting (only if stamina is above a minimum threshold)
-        if (Input.GetKey(sprintKey) && currentStamina > 0.6f) // Requires at least 10 stamina to start sprinting
+        if (Input.GetKey(sprintKey) && currentStamina > 0.6f) // Requires at least 0.6 stamina to start sprinting
         {
             isSprinting = true;
         }
@@ -113,7 +122,7 @@ public class PlayerMovement : MonoBehaviour
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
         // Use normal speed if stamina is zero or not sprinting
-        float appliedSpeed = isSprinting ? sprintSpeed : moveSpeed;
+        var appliedSpeed = isSprinting ? sprintSpeed : moveSpeed;
 
         // Move player with Rigidbody force
         if (grounded)
@@ -125,14 +134,14 @@ public class PlayerMovement : MonoBehaviour
     private void SpeedControl()
     {
         // Get player's velocity, excluding the Y axis (vertical axis)
-        Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        var flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
         // Limit velocity to the current movement speed (walk or sprint)
-        float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
+        var currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
 
         if (flatVel.magnitude > currentSpeed)
         {
-            Vector3 limitedVel = flatVel.normalized * currentSpeed;
+            var limitedVel = flatVel.normalized * currentSpeed;
             rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
         }
     }
