@@ -11,7 +11,8 @@ public class WaterDetector : MonoBehaviour
     // public AudioSource beepSound;
     public float detectionRange = 10f;
     public float minBeepInterval = 0.1f; 
-    public float maxBeepInterval = 2f; 
+    public float maxBeepInterval = 2f;
+    public bool HoldingDetector = false;
 
     private float beepTimer = 0f;
     private Transform closestWater; // The closest water source
@@ -26,20 +27,21 @@ public class WaterDetector : MonoBehaviour
         closestWater = FindClosestWater();
 
         if (closestWater)
-        {
+        { 
+     
             var distanceToWater = Vector3.Distance(transform.position, closestWater.position);
 
-            // Debug.Log("Closest water source is at a distance of: " + distanceToWater);
+                // Debug.Log("Closest water source is at a distance of: " + distanceToWater);
 
-            if (distanceToWater <= detectionRange)
-            {
-                float beepInterval = Mathf.Lerp(minBeepInterval, maxBeepInterval, distanceToWater / detectionRange);
-
-                beepTimer += Time.deltaTime;
-                if (beepTimer >= beepInterval)
+                if (distanceToWater <= detectionRange && HoldingDetector == true)
                 {
-                    Beep();
-                    beepTimer = 0f;
+                    float beepInterval = Mathf.Lerp(minBeepInterval, maxBeepInterval, distanceToWater / detectionRange);
+
+                    beepTimer += Time.deltaTime;
+                    if (beepTimer >= beepInterval)
+                    {
+                        Beep();
+                        beepTimer = 0f;
                 }
             }
             else
@@ -50,6 +52,18 @@ public class WaterDetector : MonoBehaviour
         else
         {
             // beepSound.Stop();
+        }
+
+
+        if (Input.GetKeyDown(KeyCode.E) && HoldingDetector == true)  
+        {
+            HoldingDetector = false;
+            Debug.Log("false");
+        }
+        else if (Input.GetKeyDown(KeyCode.E) && HoldingDetector == false)  
+        {
+            HoldingDetector = true;
+            Debug.Log("true");
         }
     }
 
