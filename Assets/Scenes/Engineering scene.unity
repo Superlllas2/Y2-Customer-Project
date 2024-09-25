@@ -2705,7 +2705,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startEnd: {fileID: 912632081}
   endEnd: {fileID: 2131305574}
-  PlayerInteraction: {fileID: 0}
+  PlayerInteraction: {fileID: 899992845}
   ends: []
   pickable:
     serializedVersion: 2
