@@ -10,6 +10,8 @@ public class Pump : MonoBehaviour
     public GameObject pump;
     private Vector3 playerOrientation;
     private Transform childTransform;
+    public int numPumpForSpawn = 4;
+    private int placedPumps = 0;
     
     private void Update()
     {
@@ -21,7 +23,12 @@ public class Pump : MonoBehaviour
         
         if (Input.GetKeyDown(KeyCode.Keypad8) || Input.GetKeyDown(KeyCode.Alpha8))
         {
+            if (placedPumps >= numPumpForSpawn)
+            {
+                return;
+            }
             PlacePump();
+            placedPumps++;
         }
     }
 
