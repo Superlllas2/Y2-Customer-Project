@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class AudioManager : MonoBehaviour
@@ -11,6 +12,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip step;
     public AudioClip collect;
     public AudioClip jump;
+    public AudioClip run;
 
     private void Start()
     {
@@ -21,5 +23,14 @@ public class AudioManager : MonoBehaviour
     public void PlaySFX(AudioClip clip)
     {
         SFXSource.PlayOneShot(clip);
+    }
+
+    // Implemented method to stop sound effects
+    public void StopSFX()
+    {
+        if (SFXSource.isPlaying)
+        {
+            SFXSource.Stop(); // Stop the currently playing sound effect
+        }
     }
 }
