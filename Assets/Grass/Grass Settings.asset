@@ -21,9 +21,9 @@ MonoBehaviour:
   bladeCurveAmount: 2
   bottomWidth: 0.124
   MinWidth: 0.01
-  MinHeight: 0.14780092
+  MinHeight: 0.34515038
   MaxWidth: 0.080573685
-  MaxHeight: 0.6663475
+  MaxHeight: 0.86369693
   windSpeed: 0.5
   windStrength: 0.05
   allowedBladesPerVertex: 3
