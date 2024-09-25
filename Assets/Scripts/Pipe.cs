@@ -160,9 +160,7 @@ public class Pipe : MonoBehaviour
         //     connectedAxis = "Y";
         //     Debug.Log("Y");
         // }
-
-        // ----------------
-        // TODO: translate (after rotating) (should be easy)
+        
         // ----------------
         // Quaternion desired = Quaternion.LookRotation(-connectionDirection);
         // Quaternion current = Quaternion.LookRotation(connectionDirections[bestDirection]);
