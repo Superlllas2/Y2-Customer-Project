@@ -8,7 +8,7 @@ public class Pipe : MonoBehaviour
     public Transform startEnd; // One end of the pipe
     public Transform endEnd; // The other end of the pipe
 
-    public PlayerInteraction PlayerInteraction;
+    public PlayerInteraction playerInteraction;
 
     public Transform[] ends; //TODO changing here so you can have multiple ends and small code. Nice :)
 
@@ -29,12 +29,13 @@ public class Pipe : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        playerInteraction = FindObjectOfType<PlayerInteraction>();
     }
 
     void Update()
     {
         // Check for pipe connection only if the pipe is being held and not already snapped
-        if (isBeingHeld && !isSnapped && !PlayerInteraction.isInRotationMode)
+        if (isBeingHeld && !isSnapped && !playerInteraction.isInRotationMode)
         {
             CheckForConnection();
         }
