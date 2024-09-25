@@ -8,7 +8,7 @@ public class Pipe : MonoBehaviour
     public Transform startEnd; // One end of the pipe
     public Transform endEnd; // The other end of the pipe
 
-    public PlayerInteraction playerInteraction;
+    private PlayerInteraction playerInteraction;
 
     public Transform[] ends; //TODO changing here so you can have multiple ends and small code. Nice :)
 
@@ -185,15 +185,18 @@ public class Pipe : MonoBehaviour
         {
             if (otherPipe.pipeType == PipeType.Bend)
             {
-                SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
-                // var childPivotPoint = endPositionThisPipe.position;
-                // transform.position = childPivotPoint;
-                // transform.RotateAround(childPivotPoint, Vector3.forward, -90);
-                // transform.rotation = Quaternion.Euler(0, 0, 90) * transform.rotation;
-                // transform.rotation = Quaternion.identity;
-                // transform.rotation *= Quaternion.Euler(0, 0, 0);
-                transform.SetParent(endPositionOnTheOtherPipe);
-                transform.parent.rotation = Quaternion.Euler(0, 0, -90) * transform.rotation;
+                // SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
+                // // var childPivotPoint = endPositionThisPipe.position;
+                // // transform.position = childPivotPoint;
+                // // transform.RotateAround(childPivotPoint, Vector3.forward, -90);
+                // // transform.rotation = Quaternion.Euler(0, 0, 90) * transform.rotation;
+                // // transform.rotation = Quaternion.identity;
+                // // transform.rotation *= Quaternion.Euler(0, 0, 0);
+                // transform.SetParent(endPositionOnTheOtherPipe);
+                // transform.parent.rotation = Quaternion.Euler(0, 0, -90) * transform.rotation;
+                
+                Vector3 distanceDifference = endPositionOnTheOtherPipe.position - endPositionThisPipe.position;
+                transform.position += distanceDifference;
 
                 // otherPipe.endEnd.Rotate(); // rotates the PARENT, which acts as a new pivot point
                 // transform.SetParent(null);

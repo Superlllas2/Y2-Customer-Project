@@ -17,7 +17,6 @@ public class House : MonoBehaviour
         if (pipe && pipe.isSnapped)
         {
             isConnected = true;
-            Debug.Log("Pipe series have been connected");
         }
     }
 }

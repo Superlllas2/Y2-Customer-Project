@@ -31,7 +31,6 @@ public class IconAboveObject : MonoBehaviour
             Debug.Log(house.isConnected);
             if (house && house.isConnected)
             {
-                Debug.Log("we get here");
                 iconInstance.gameObject.SetActive(false);
             }
             
@@ -54,6 +53,5 @@ public class IconAboveObject : MonoBehaviour
         iconInstance = Instantiate(houseIsDead, transform.position + Vector3.up * iconHeight, Quaternion.identity);
         iconInstance.SetParent(transform);
         iconInstance.LookAt(Camera.main.transform); // Make the new icon look at the camera
-        Debug.Log("Icon changed!");
     }
 }
