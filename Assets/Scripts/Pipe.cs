@@ -26,6 +26,10 @@ public class Pipe : MonoBehaviour
     public bool isConnected = false;
     public PipeType pipeType;
 
+    public AudioManager audioManager;
+
+
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -231,6 +235,9 @@ public class Pipe : MonoBehaviour
     void LockPipe()
     {
         Debug.Log("locked a pipe");
+
+        audioManager.PlaySFX(audioManager.pipe);
+
         isSnapped = true;
         rb.isKinematic = true; // Disable physics to lock the pipe in place
         isBeingHeld = false; // Pipe is no longer being held by the player

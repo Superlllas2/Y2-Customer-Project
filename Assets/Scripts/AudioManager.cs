@@ -5,14 +5,15 @@ public class AudioManager : MonoBehaviour
 {
     [Header("Audio Source")]
     [SerializeField] private AudioSource musicSource;
-    [SerializeField] private AudioSource SFXSource;
+    [SerializeField] public AudioSource SFXSource; // Keep this public to access it in Footsteps
 
     [Header("Audio Clip")]
     public AudioClip background;
-    public AudioClip step;
-    public AudioClip collect;
-    public AudioClip jump;
-    public AudioClip run;
+    public AudioClip step; // Walking sound
+    public AudioClip generator;
+    public AudioClip generatorPut;
+    public AudioClip pipe;
+    public AudioClip run; // Running sound
 
     private void Start()
     {
@@ -25,7 +26,6 @@ public class AudioManager : MonoBehaviour
         SFXSource.PlayOneShot(clip);
     }
 
-    // Implemented method to stop sound effects
     public void StopSFX()
     {
         if (SFXSource.isPlaying)
