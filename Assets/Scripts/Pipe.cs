@@ -230,6 +230,7 @@ public class Pipe : MonoBehaviour
     // Lock the pipe in place by making it kinematic and disabling further movement
     void LockPipe()
     {
+        Debug.Log("locked a pipe");
         isSnapped = true;
         rb.isKinematic = true; // Disable physics to lock the pipe in place
         isBeingHeld = false; // Pipe is no longer being held by the player

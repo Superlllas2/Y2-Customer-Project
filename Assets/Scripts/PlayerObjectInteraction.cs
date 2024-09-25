@@ -15,8 +15,8 @@ public class PlayerInteraction : MonoBehaviour
     private Camera cam;
     private Pipe grabbedPipe = null;
     public bool isInRotationMode = false;     // Flag to check if the player is in rotation mode
-    private bool canBeSnapped = false;
 
+    public PlayerMovement PlayerMovement;
     public MonoBehaviour cameraController;
 
     void Start()
@@ -32,7 +32,7 @@ public class PlayerInteraction : MonoBehaviour
             RotateObject();  // Handle object rotation based on mouse movement
 
             // Exit rotation mode when Shift is released
-            if (Input.GetKeyUp(KeyCode.LeftShift))
+            if (Input.GetKeyUp(KeyCode.R))
             {
                 ExitRotationMode();
             }
@@ -80,15 +80,13 @@ public class PlayerInteraction : MonoBehaviour
         // Move the grabbed object while the left mouse button is held
         if (grabbedObjectRb)
         {
-            if (Input.GetKeyDown(KeyCode.LeftShift))  // Enter rotation mode when Shift is pressed
+            if (Input.GetKeyDown(KeyCode.R))  // Enter rotation mode when Shift is pressed
             {
                 EnterRotationMode();
-                canBeSnapped = false;
             }
 
             if (Input.GetKeyUp(KeyCode.LeftShift))
             {
-                canBeSnapped = true;
             }
 
             MoveObject();  // Move the grabbed object
@@ -184,6 +182,7 @@ public class PlayerInteraction : MonoBehaviour
     // Enter Rotation Mode: Disable player/camera movement, hide the cursor, and start rotating
     void EnterRotationMode()
     {
+        PlayerMovement.isDisabled = true;
         isInRotationMode = true;
 
         if (cameraController)
@@ -196,6 +195,7 @@ public class PlayerInteraction : MonoBehaviour
     // Exit Rotation Mode: Restore player/camera movement, show the cursor
     void ExitRotationMode()
     {
+        PlayerMovement.isDisabled = false;
         isInRotationMode = false;
 
         if (cameraController)

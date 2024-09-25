@@ -4,27 +4,36 @@ using UnityEngine;
 
 public class Footsteps : MonoBehaviour
 {
-    public AudioSource footstepsSound, sprintSound;
-
+    public PlayerMovement PlayerMovement;
+    private AudioManager audioManager;
+    
+    // private IEnumerator PlayStepSound()
+    // {
+    //     while (true)
+    //     {
+    //         audioManager.PlaySFX(audioManager.step);
+    //         yield return new WaitForSeconds(stepInterval);
+    //     }
+    // }
+    
     void Update()
     {
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
+        // Corrected condition with parentheses
+        if ((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)) && PlayerMovement.grounded)
         {
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                footstepsSound.enabled = false;
-                sprintSound.enabled = true;
+                audioManager.PlaySFX(audioManager.jump);
             }
             else
             {
-                footstepsSound.enabled = true;
-                sprintSound.enabled = false;
+
             }
         }
         else
         {
-            footstepsSound.enabled = false;
-            sprintSound.enabled = false;
+
         }
     }
+
 }
