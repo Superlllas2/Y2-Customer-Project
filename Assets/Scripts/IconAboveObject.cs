@@ -27,8 +27,6 @@ public class IconAboveObject : MonoBehaviour
         {
             iconInstance.position = transform.position + Vector3.up * iconHeight;
             iconInstance.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
-            Debug.Log(house);
-            Debug.Log(house.isConnected);
             if (house && house.isConnected)
             {
                 iconInstance.gameObject.SetActive(false);

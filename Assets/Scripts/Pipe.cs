@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.Serialization;
 
 public class Pipe : MonoBehaviour
 {
@@ -18,10 +18,11 @@ public class Pipe : MonoBehaviour
     private bool isBeingHeld = false; // Is the pipe currently being held by the player?
     public bool isSnapped = false; // Is the pipe snapped and connected to another object?
     private Rigidbody rb;
-    public String connectedAxis = null;
+    public string connectedAxis = null;
     public Vector3[] connectionDirections;
 
     // The next pipe in the series
+    public Pipe previousPipe;
     public Pipe nextPipe;
     public bool isConnected = false;
     public PipeType pipeType;
@@ -41,20 +42,17 @@ public class Pipe : MonoBehaviour
         }
     }
 
-
     // Check if the held pipe is close enough to connect to another pipe
     void CheckForConnection()
     {
-        // Check for nearby pipes within the snapDistance
         Collider[] nearbyPipes = Physics.OverlapSphere(startEnd.position, snapDistance, pickable);
 
         foreach (Collider other in nearbyPipes)
         {
             Pipe otherPipe = other.GetComponent<Pipe>();
 
-            if (otherPipe is not null && otherPipe != this)
+            if (otherPipe && otherPipe != this)
             {
-                // Check if this pipe's startEnd is close enough to the other pipe's ends
                 if (Vector3.Distance(startEnd.position, otherPipe.startEnd.position) <= snapDistance)
                 {
                     // Debug.Log("startEnd.position, otherPipe.startEnd.position");
@@ -72,7 +70,6 @@ public class Pipe : MonoBehaviour
             }
         }
 
-        // Also check the other end of this pipe
         nearbyPipes = Physics.OverlapSphere(endEnd.position, snapDistance, pickable);
 
         foreach (Collider other in nearbyPipes)
@@ -101,7 +98,7 @@ public class Pipe : MonoBehaviour
     }
 
     // Align and snap the held pipe to the target pipe
-    void AlignAndSnapPipe(Transform endPositionOnTheOtherPipe, Pipe otherPipe, Transform endPositionThisPipe)
+    private void AlignAndSnapPipe(Transform endPositionOnTheOtherPipe, Pipe otherPipe, Transform endPositionThisPipe)
     {
         var bestDirection = 0;
         var bestDot = float.MinValue;
@@ -194,7 +191,7 @@ public class Pipe : MonoBehaviour
                 // // transform.rotation *= Quaternion.Euler(0, 0, 0);
                 // transform.SetParent(endPositionOnTheOtherPipe);
                 // transform.parent.rotation = Quaternion.Euler(0, 0, -90) * transform.rotation;
-                
+
                 Vector3 distanceDifference = endPositionOnTheOtherPipe.position - endPositionThisPipe.position;
                 transform.position += distanceDifference;
 
@@ -208,7 +205,10 @@ public class Pipe : MonoBehaviour
         }
 
         // Mark the pipes as connected
-        nextPipe = otherPipe;
+        previousPipe = otherPipe;
+        otherPipe.nextPipe = this;
+
+        // Mark the pipes as connected
         isConnected = true;
         LockPipe(); // Lock the pipe in place
     }
