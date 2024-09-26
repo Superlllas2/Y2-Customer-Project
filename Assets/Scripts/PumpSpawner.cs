@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using UnityEngine;
 
 public class Pump : MonoBehaviour
@@ -12,7 +13,20 @@ public class Pump : MonoBehaviour
     private Transform childTransform;
     public int numPumpForSpawn = 4;
     private int placedPumps = 0;
-    
+    private Renderer objectRenderer;
+    private float halfSizeY;
+
+    private void Start()
+    {
+        objectRenderer = pump.GetComponent<Renderer>();
+        
+        if (objectRenderer != null)
+        {
+            halfSizeY = objectRenderer.bounds.size.y/2;
+            Debug.Log("Y size of the object: " + halfSizeY);
+        }
+    }
+
     private void Update()
     {
         childTransform = transform.Find("Orientation");
@@ -35,6 +49,6 @@ public class Pump : MonoBehaviour
     private void PlacePump()
     {
         var spawnPosition = playerOrientation + (childTransform.forward * 3);
-        Instantiate(pump, new Vector3(spawnPosition.x, ground.transform.position.y + 0.9f, spawnPosition.z), childTransform.rotation * Quaternion.Euler(0, 90, 0));
+        Instantiate(pump, new Vector3(spawnPosition.x, ground.transform.position.y + halfSizeY - 0.2f, spawnPosition.z), childTransform.rotation);
     }
 }
