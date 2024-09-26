@@ -3,10 +3,11 @@ using UnityEngine;
 public class House : MonoBehaviour
 {
     private Renderer houseRenderer;
-    public bool isConnected;
+    private IconAboveObject iconAboveObject;
     
     void Start()
     {
+        iconAboveObject = GetComponent<IconAboveObject>();
         houseRenderer = GetComponent<Renderer>();
     }
 
@@ -16,7 +17,7 @@ public class House : MonoBehaviour
 
         if (pipe && pipe.isSnapped)
         {
-            isConnected = true;
+            iconAboveObject.isConnected = true;
         }
     }
 }

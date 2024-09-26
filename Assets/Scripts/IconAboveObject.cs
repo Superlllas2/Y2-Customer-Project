@@ -5,6 +5,7 @@ public class IconAboveObject : MonoBehaviour
     [Header("Prefab Settings")]
     public Transform iconPrefab; // The default icon prefab
     public Transform secondaryPrefab; // The second state icon prefab (optional)
+    public Transform thirdPrefab; // The second state icon prefab (optional)
     
     [Header("Icon Settings")]
     public float iconHeight = 2f; // Height above the object
@@ -17,7 +18,9 @@ public class IconAboveObject : MonoBehaviour
 
     private Transform iconInstance;
     private float currentTimer;
-    private bool isConnected = false; // Flag for connection state (can be set externally)
+    public bool isConnected = false; // Flag for connection state (can be set externally)
+    private bool wasHouseDead = false;
+    private bool wasHouseWatered = false;
 
     private void Start()
     {
@@ -35,18 +38,23 @@ public class IconAboveObject : MonoBehaviour
             iconInstance.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
 
             // Optionally hide the icon if the object is connected (for scenarios like 'House')
-            if (hideWhenConnected && isConnected)
+            if (isConnected && !wasHouseWatered)
             {
-                iconInstance.gameObject.SetActive(false);
+                if (currentTimer > 0f)
+                {
+                    ChangeIcon(secondaryPrefab);
+                    wasHouseWatered = true;
+                }
             }
 
             // Handle the state change if the second state is needed
-            if (isSecondStateNeeded)
+            if (isSecondStateNeeded && !wasHouseWatered)
             {
                 currentTimer -= Time.deltaTime;
                 if (currentTimer <= 0f)
                 {
-                    ChangeIcon();
+                    ChangeIcon(thirdPrefab);
+                    wasHouseDead = true;
                     currentTimer = timer; // Reset the timer
                 }
             }
@@ -66,10 +74,22 @@ public class IconAboveObject : MonoBehaviour
         // iconInstance.LookAt(Camera.main.transform); // Make the icon face the camera
     }
 
-    private void ChangeIcon()
+    private void ChangeIcon(Transform prefab)
     {
-        // Spawn the secondary icon if the first state has ended
-        SpawnIcon(secondaryPrefab);
+        if (!wasHouseDead)
+        {
+            Debug.Log(iconInstance.name);
+
+            // Check if the current icon is already the thirdPrefab, and if so, don't change it
+            if (iconInstance && iconInstance.name == thirdPrefab.name)
+            {
+                return; // Exit the method, as we don't want to change the icon further
+            }
+
+            // Spawn the new icon if the current one is not the thirdPrefab
+            SpawnIcon(prefab);
+        }
+
     }
 
     // Optional method to update connection status externally

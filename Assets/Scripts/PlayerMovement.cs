@@ -198,7 +198,7 @@ public class PlayerMovement : MonoBehaviour
     private void UpdateStaminaBar()
     {
         // Update the stamina bar fill amount based on current stamina
-        staminaBarImage.fillAmount = currentStamina / maxStamina;
+        if(staminaBarImage) staminaBarImage.fillAmount = currentStamina / maxStamina;
     }
     
     private void CheckIfMoving()
