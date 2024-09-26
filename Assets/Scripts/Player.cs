@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    private float playerScore = 0;
+    public float playerScore = 0;
 
     private void Start()
     {

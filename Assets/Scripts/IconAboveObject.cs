@@ -19,8 +19,8 @@ public class IconAboveObject : MonoBehaviour
     private Transform iconInstance;
     public float currentTimer;
     public bool isConnected = false; // Flag for connection state (can be set externally)
-    private bool wasHouseDead = false;
-    private bool wasHouseWatered = false;
+    public bool wasHouseDead = false;
+    public bool wasHouseWatered = false;
 
     private void Start()
     {
