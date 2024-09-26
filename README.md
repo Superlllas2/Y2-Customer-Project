@@ -1,14 +1,14 @@
 This game was done by Pc-5 "The Huns". 
 
 The controls:
-Movement             - WASD
-Sprint               - Hold Shift
-Use water detector   - E
-Pick-up the pipe     - Left Click
-Rotate the pipe      - Hold R while holding LeftClick
-Spawn a pipe         - Left-click one of the spawners
-Spawn a pump         - 8
-Pipe rotation        - Mouse movement
+- Movement             - WASD
+- Sprint               - Hold Shift
+- Use water detector   - E
+- Pick-up the pipe     - Left Click
+- Rotate the pipe      - Hold R while holding LeftClick
+- Spawn a pipe         - Left-click one of the spawners
+- Spawn a pump         - 8
+- Pipe rotation        - Mouse movement
 
 
 How to play:
