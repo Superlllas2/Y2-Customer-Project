@@ -10,7 +10,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip background;
     public AudioClip step;
     public AudioClip collect;
-    public AudioClip jump;
+    public AudioClip beep;
 
     private void Start()
     {

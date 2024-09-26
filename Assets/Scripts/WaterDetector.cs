@@ -15,6 +15,7 @@ public class WaterDetector : MonoBehaviour
     public float maxBeepInterval = 2f;
     public bool HoldingDetector = false;
     public GameObject Water_Detector;
+    public AudioManager audioManager;
 
     private float beepTimer = 0f;
     private Transform closestWater; // The closest water source
@@ -51,7 +52,8 @@ public class WaterDetector : MonoBehaviour
                     beepTimer += Time.deltaTime;
                     if (beepTimer >= beepInterval)
                     {
-                        Beep();
+                        audioManager.PlaySFX(audioManager.beep);
+                        // Beep();
                         beepTimer = 0f;
                 }
             }
@@ -110,6 +112,6 @@ public class WaterDetector : MonoBehaviour
         // {
         //     beepSound.Play();
         // }
-        Debug.Log("Getting closer to water");
+        // Debug.Log("Getting closer to water");
     }
 }

@@ -23,11 +23,11 @@ public class Footsteps : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                audioManager.PlaySFX(audioManager.jump);
+                // audioManager.PlaySFX(audioManager.jump);
             }
             else
             {
-
+                // audioManager.PlaySFX(audioManager.step);
             }
         }
         else
