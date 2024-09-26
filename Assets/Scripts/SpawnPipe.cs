@@ -15,11 +15,13 @@ public class SpawnPipe : MonoBehaviour
     private IconAboveObject iconAboveObject;
     public Player player;
     private Transform playerOrientation;
+    private Transform pipeSpawn;
 
     private void Start()
     {
         iconAboveObject = FindObjectOfType<IconAboveObject>();
         playerOrientation = player.transform.Find("Orientation");
+        pipeSpawn = playerOrientation.transform.Find("SpawnPipe");
     }
 
     private void Update()
@@ -44,13 +46,16 @@ public class SpawnPipe : MonoBehaviour
         switch(pipeType)
         {
             case PipeType.Straight:
-                Instantiate(straightPipe, playerOrientation.transform.position + new Vector3(0, 0, 0.0005f), Quaternion.identity);
+                // Instantiate(straightPipe, playerOrientation.transform.position + new Vector3(0, 5, -5f), Quaternion.identity);
+                Instantiate(straightPipe, pipeSpawn.transform.position, Quaternion.identity);
                 break;
             case PipeType.Bend:
-                Instantiate(cornerPipe, playerOrientation.transform.position + new Vector3(0, 0, 0.0005f), Quaternion.identity);
+                // Instantiate(cornerPipe, playerOrientation.transform.position + new Vector3(0, 5, -5f), Quaternion.identity);
+                Instantiate(cornerPipe, pipeSpawn.transform.position, Quaternion.identity);
                 break;
             case PipeType.Sanitizer:
-                Instantiate(sanitiser, playerOrientation.transform.position + new Vector3(0, 0, 0.0005f), Quaternion.identity);
+                // Instantiate(sanitiser, playerOrientation.transform.position + new Vector3(0, 5, -5f), Quaternion.identity);
+                Instantiate(sanitiser, pipeSpawn.transform.position, Quaternion.identity);
                 break;
         }
 
