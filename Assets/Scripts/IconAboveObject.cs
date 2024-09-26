@@ -1,55 +1,80 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class IconAboveObject : MonoBehaviour
 {
-    public Transform needWaterPrefab;
-    public Transform houseIsDead;
-    public float iconHeight = 2f; 
-    public float rotationSpeed = 30f;
-    public House house;
-    public float timer = 60f;
+    [Header("Prefab Settings")]
+    public Transform iconPrefab; // The default icon prefab
+    public Transform secondaryPrefab; // The second state icon prefab (optional)
+    
+    [Header("Icon Settings")]
+    public float iconHeight = 2f; // Height above the object
+    public float rotationSpeed = 30f; // Rotation speed of the icon
+    public float timer = 60f; // Timer for changing states
+
+    [Header("State Settings")]
+    public bool isSecondStateNeeded; // Toggle for enabling the second state
+    public bool hideWhenConnected; // Hide the icon if the object gets connected (for use with objects like 'House')
+
     private Transform iconInstance;
     private float currentTimer;
+    private bool isConnected = false; // Flag for connection state (can be set externally)
 
-    void Start()
+    private void Start()
     {
-        house = GetComponentInParent<House>();
-        iconInstance = Instantiate(needWaterPrefab, transform.position + Vector3.up * iconHeight, Quaternion.identity);
-        iconInstance.SetParent(transform);
-        iconInstance.LookAt(Camera.main.transform);
+        // Initialize the icon
+        SpawnIcon(iconPrefab);
         currentTimer = timer;
     }
 
-    void Update()
+    private void Update()
     {
+        // Rotate and position the icon above the object
         if (iconInstance)
         {
             iconInstance.position = transform.position + Vector3.up * iconHeight;
             iconInstance.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
-            if (house && house.isConnected)
+
+            // Optionally hide the icon if the object is connected (for scenarios like 'House')
+            if (hideWhenConnected && isConnected)
             {
                 iconInstance.gameObject.SetActive(false);
             }
-            
-            currentTimer -= Time.deltaTime;
-            if (currentTimer <= 0f)
+
+            // Handle the state change if the second state is needed
+            if (isSecondStateNeeded)
             {
-                ChangeIcon();
-                currentTimer = timer;
+                currentTimer -= Time.deltaTime;
+                if (currentTimer <= 0f)
+                {
+                    ChangeIcon();
+                    currentTimer = timer; // Reset the timer
+                }
             }
         }
     }
-    
-    void ChangeIcon()
+
+    private void SpawnIcon(Transform prefab)
     {
         if (iconInstance)
         {
-            Destroy(iconInstance.gameObject);
+            Destroy(iconInstance.gameObject); // Clean up any previous icon
         }
 
-        iconInstance = Instantiate(houseIsDead, transform.position + Vector3.up * iconHeight, Quaternion.identity);
+        // Instantiate and set the icon prefab
+        iconInstance = Instantiate(prefab, transform.position + Vector3.up * iconHeight, Quaternion.identity);
         iconInstance.SetParent(transform);
-        iconInstance.LookAt(Camera.main.transform); // Make the new icon look at the camera
+        // iconInstance.LookAt(Camera.main.transform); // Make the icon face the camera
+    }
+
+    private void ChangeIcon()
+    {
+        // Spawn the secondary icon if the first state has ended
+        SpawnIcon(secondaryPrefab);
+    }
+
+    // Optional method to update connection status externally
+    public void SetConnectionState(bool connected)
+    {
+        isConnected = connected;
     }
 }

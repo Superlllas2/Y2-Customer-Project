@@ -122,7 +122,6 @@ public class PlayerInteraction : MonoBehaviour
                 Pipe hitPipe = hit.collider.GetComponent<Pipe>();
                 if (!hitPipe) return;
                 DisconnectPipesUsingBFS(hitPipe);
-                // TODO: Add recursive method here. Previous will be disconnecting previous, next will be disconnecting next, until there is none
 
                 // switch (hitPipe.connectedAxis)
                 // {

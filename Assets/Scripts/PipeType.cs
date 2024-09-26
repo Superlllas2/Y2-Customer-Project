@@ -2,5 +2,6 @@ public enum PipeType
 {
     Bend,
     Straight,
-    T
+    T,
+    Sanitizer
 }

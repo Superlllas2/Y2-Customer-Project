@@ -23,13 +23,13 @@ public class WaterDetector : MonoBehaviour
     {
 
         closestWater = null; // Start with no closest water source
-        if (Water_Detector == null)
-
-            Water_Detector = transform.Find("Water_Detector").gameObject; 
+        // if (Water_Detector == null)
+        //
+        //     Water_Detector = transform.Find("Water_Detector").gameObject; 
 
         if (Water_Detector == null)
         {
-            Debug.LogError("The Water_Detector reference is missing or not found in the hierarchy.");
+            Debug.Log("The Water_Detector reference is missing or not found in the hierarchy.");
         }
     }
 
@@ -79,11 +79,11 @@ public class WaterDetector : MonoBehaviour
 
         if (HoldingDetector == false)
         {
-            Water_Detector.SetActive(HoldingDetector);
+            if(Water_Detector) Water_Detector.SetActive(HoldingDetector);
         }
         else if (HoldingDetector == true)
         {
-            Water_Detector.SetActive(HoldingDetector);
+            if(Water_Detector) Water_Detector.SetActive(HoldingDetector);
         }
     }
 
