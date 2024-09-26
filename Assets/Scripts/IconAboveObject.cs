@@ -17,7 +17,7 @@ public class IconAboveObject : MonoBehaviour
     public bool hideWhenConnected; // Hide the icon if the object gets connected (for use with objects like 'House')
 
     private Transform iconInstance;
-    private float currentTimer;
+    public float currentTimer;
     public bool isConnected = false; // Flag for connection state (can be set externally)
     private bool wasHouseDead = false;
     private bool wasHouseWatered = false;

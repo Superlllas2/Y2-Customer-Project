@@ -14,6 +14,6 @@ public class Player : MonoBehaviour
     {
         playerScore += scoreIncrement;
         UIManager.Instance.UpdateScore((int)playerScore);
-        // Debug.Log("Player Score incremented by: " + scoreIncrement + " | Total Score: " + playerScore);
+        Debug.Log("Player Score incremented by: " + scoreIncrement + " | Total Score: " + playerScore);
     }
 }
