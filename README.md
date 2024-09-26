@@ -18,8 +18,8 @@ How to play:
 4) Spawn pipes by clicking on the spawners. They will be spawned around you
 
 How to win or lose:
-WIN: Supply the house with water on time. It will show a water drop icon.
-LOSE: Not connected pipes in time. The house will output the skull icon
+1) WIN: Supply the house with water on time. It will show a water drop icon.
+2) LOSE: Not connected pipes in time. The house will output the skull icon
 
 Either way, the scene will be moved back to the main menu 5 seconds after finishing
 
