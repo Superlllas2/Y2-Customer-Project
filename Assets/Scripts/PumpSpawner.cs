@@ -23,7 +23,6 @@ public class Pump : MonoBehaviour
         if (objectRenderer != null)
         {
             halfSizeY = objectRenderer.bounds.size.y/2;
-            Debug.Log("Y size of the object: " + halfSizeY);
         }
     }
 

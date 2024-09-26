@@ -69,12 +69,10 @@ public class WaterDetector : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E) && HoldingDetector == true)  
         {
             HoldingDetector = false;
-            Debug.Log("false");
         }
         else if (Input.GetKeyDown(KeyCode.E) && HoldingDetector == false)  
         {
             HoldingDetector = true;
-            Debug.Log("true");
         }
 
         if (HoldingDetector == false)
@@ -112,6 +110,6 @@ public class WaterDetector : MonoBehaviour
         // {
         //     beepSound.Play();
         // }
-        // Debug.Log("Getting closer to water");
+        Debug.Log("Getting closer to water");
     }
 }
