@@ -25,7 +25,7 @@ public static class PipeNetwork
                 continue;
             }
 
-            if (IsNearSource(pipe, fallbackSourceRadius))
+            if (pipe.attachedSource || IsNearSource(pipe, fallbackSourceRadius))
             {
                 return true;
             }
@@ -68,6 +68,7 @@ public static class PipeNetwork
 
             current.nextPipe = null;
             current.previousPipe = null;
+            current.attachedSource = null;
             current.isConnected = false;
             current.isSnapped = false;
             current.SetHeldState(false);

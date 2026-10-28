@@ -1,6 +1,4 @@
-﻿<Solution>
+<Solution>
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
-  <Project Path="Unity.RenderPipelines.HighDefinitionConfig.Editor.Tests.csproj" />
-  <Project Path="Unity.RenderPipelines.HighDefinition.Config.Runtime.csproj" />
 </Solution>

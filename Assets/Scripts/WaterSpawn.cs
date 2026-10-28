@@ -70,11 +70,14 @@ public class WaterSpawn : MonoBehaviour
         prefab.transform.position = spawnPosition;
         prefab.SetActive(true);
 
-        if (!prefab.GetComponent<PipeNetworkSource>())
+        var source = prefab.GetComponent<PipeNetworkSource>();
+        if (!source)
         {
-            var source = prefab.AddComponent<PipeNetworkSource>();
-            source.connectRadius = 2.5f;
+            source = prefab.AddComponent<PipeNetworkSource>();
         }
+
+        source.connectRadius = 2.5f;
+        source.TryAutoAssignConnectPoint();
 
         lastCreated = prefab.transform;
 

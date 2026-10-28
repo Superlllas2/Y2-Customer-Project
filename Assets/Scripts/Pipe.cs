@@ -20,6 +20,9 @@ public class Pipe : MonoBehaviour
     public bool isConnected;
     public PipeType pipeType;
 
+    /// <summary>Set when this pipe is snapped directly onto a pump/water source.</summary>
+    public PipeNetworkSource attachedSource;
+
     private const float MinOutwardSqrMagnitude = 1e-6f;
 
     void Start()
@@ -53,7 +56,7 @@ public class Pipe : MonoBehaviour
         return end.forward;
     }
 
-    // Check if the held pipe is close enough to connect to another pipe
+    // Check if the held pipe is close enough to connect to another pipe or a network source
     void CheckForConnection()
     {
         if (!startEnd || !endEnd)
@@ -67,14 +70,15 @@ public class Pipe : MonoBehaviour
             reachFromCenter = Mathf.Max(reachFromCenter, Vector3.Distance(transform.position, end.position));
         }
 
-        Collider[] nearby = Physics.OverlapSphere(transform.position, reachFromCenter + snapDistance, pickable);
+        float searchRadius = reachFromCenter + snapDistance;
 
-        float bestDistance = snapDistance;
-        Transform bestMyEnd = null;
+        float bestPipeDistance = snapDistance;
+        Transform bestMyEndForPipe = null;
         Transform bestTheirEnd = null;
         Pipe bestOther = null;
 
-        foreach (Collider other in nearby)
+        Collider[] nearbyPipes = Physics.OverlapSphere(transform.position, searchRadius, pickable);
+        foreach (Collider other in nearbyPipes)
         {
             Pipe otherPipe = other.GetComponent<Pipe>();
             if (!otherPipe || otherPipe == this || !otherPipe.startEnd || !otherPipe.endEnd)
@@ -87,10 +91,10 @@ public class Pipe : MonoBehaviour
                 foreach (Transform theirEnd in otherPipe.GetEnds())
                 {
                     float distance = Vector3.Distance(myEnd.position, theirEnd.position);
-                    if (distance <= bestDistance)
+                    if (distance <= bestPipeDistance)
                     {
-                        bestDistance = distance;
-                        bestMyEnd = myEnd;
+                        bestPipeDistance = distance;
+                        bestMyEndForPipe = myEnd;
                         bestTheirEnd = theirEnd;
                         bestOther = otherPipe;
                     }
@@ -98,10 +102,75 @@ public class Pipe : MonoBehaviour
             }
         }
 
-        if (bestOther != null)
+        float bestSourceDistance = snapDistance;
+        Transform bestMyEndForSource = null;
+        PipeNetworkSource bestSource = null;
+
+        // Sources (pumps / water) may not be on the pickable layer — search all colliders.
+        Collider[] nearbyAll = Physics.OverlapSphere(transform.position, searchRadius);
+        foreach (Collider other in nearbyAll)
         {
-            AlignAndSnapPipe(bestTheirEnd, bestOther, bestMyEnd);
+            if (!other)
+            {
+                continue;
+            }
+
+            var source = other.GetComponentInParent<PipeNetworkSource>();
+            if (!source)
+            {
+                continue;
+            }
+
+            var attachPos = source.GetAttachPosition();
+            var radius = source.connectRadius > 0f ? source.connectRadius : snapDistance;
+            var maxDist = Mathf.Min(snapDistance, radius);
+
+            foreach (Transform myEnd in GetEnds())
+            {
+                float distance = Vector3.Distance(myEnd.position, attachPos);
+                if (distance <= maxDist && distance <= bestSourceDistance)
+                {
+                    bestSourceDistance = distance;
+                    bestMyEndForSource = myEnd;
+                    bestSource = source;
+                }
+            }
         }
+
+        if (bestSource != null && bestSourceDistance <= bestPipeDistance)
+        {
+            AlignAndSnapToSource(bestSource, bestMyEndForSource);
+        }
+        else if (bestOther != null)
+        {
+            AlignAndSnapPipe(bestTheirEnd, bestOther, bestMyEndForPipe);
+        }
+    }
+
+    private void AlignAndSnapToSource(PipeNetworkSource source, Transform myEnd)
+    {
+        if (!source || !myEnd)
+        {
+            return;
+        }
+
+        Vector3 myOutward = GetOutward(myEnd);
+        Vector3 theirOutward = source.GetOutward();
+
+        if (myOutward.sqrMagnitude < MinOutwardSqrMagnitude ||
+            theirOutward.sqrMagnitude < MinOutwardSqrMagnitude)
+        {
+            return;
+        }
+
+        Vector3 targetOutward = -theirOutward;
+        transform.rotation = Quaternion.FromToRotation(myOutward, targetOutward) * transform.rotation;
+        transform.position += source.GetAttachPosition() - myEnd.position;
+
+        attachedSource = source;
+        previousPipe = null;
+        isConnected = true;
+        LockPipe();
     }
 
     // Align and snap the held pipe to the target pipe
@@ -120,6 +189,7 @@ public class Pipe : MonoBehaviour
         transform.rotation = Quaternion.FromToRotation(myOutward, targetOutward) * transform.rotation;
         transform.position += theirEnd.position - myEnd.position;
 
+        attachedSource = null;
         previousPipe = otherPipe;
         otherPipe.nextPipe = this;
 

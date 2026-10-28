@@ -53,10 +53,16 @@ public class Pump : MonoBehaviour
             new Vector3(spawnPosition.x, ground.transform.position.y + halfSizeY - 0.2f, spawnPosition.z),
             childTransform.rotation);
 
-        if (instance && !instance.GetComponent<PipeNetworkSource>())
+        if (instance)
         {
-            var source = instance.AddComponent<PipeNetworkSource>();
+            var source = instance.GetComponent<PipeNetworkSource>();
+            if (!source)
+            {
+                source = instance.AddComponent<PipeNetworkSource>();
+            }
+
             source.connectRadius = 2f;
+            source.TryAutoAssignConnectPoint();
         }
     }
 }
