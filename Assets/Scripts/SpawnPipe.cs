@@ -19,7 +19,7 @@ public class SpawnPipe : MonoBehaviour
 
     private void Start()
     {
-        iconAboveObject = FindObjectOfType<IconAboveObject>();
+        iconAboveObject = FindAnyObjectByType<IconAboveObject>();
         playerOrientation = player.transform.Find("Orientation");
         pipeSpawn = playerOrientation.transform.Find("SpawnPipe");
     }

@@ -28,11 +28,12 @@ public class RenderTerrainMap : MonoBehaviour
 
     void GetBounds()
     {
-
-        if (renderers.Length > 0)
+        if (renderers != null && renderers.Length > 0)
         {
             foreach (Renderer renderer in renderers)
             {
+                if (!renderer) continue;
+
                 if (bounds.size.magnitude < 0.1f)
                 {
                     bounds = new Bounds(renderer.transform.position, Vector3.zero);
@@ -41,10 +42,12 @@ public class RenderTerrainMap : MonoBehaviour
             }
         }
 
-        if (terrains.Length > 0)
+        if (terrains != null && terrains.Length > 0)
         {
             foreach (Terrain terrain in terrains)
             {
+                if (!terrain || terrain.terrainData == null) continue;
+
                 if (bounds.size.magnitude < 0.1f)
                 {
                     bounds = new Bounds(terrain.transform.position, Vector3.zero);
@@ -62,7 +65,10 @@ public class RenderTerrainMap : MonoBehaviour
         bounds = new Bounds(transform.position, Vector3.zero);
         tempTex = new RenderTexture(resolution, resolution, 24);
         GetBounds();
-        SetUpCam();
+        if (!SetUpCam())
+        {
+            return;
+        }
         DrawDiffuseMap();
     }
 
@@ -70,7 +76,10 @@ public class RenderTerrainMap : MonoBehaviour
     void Start()
     {
         GetBounds();
-        SetUpCam();
+        if (!SetUpCam())
+        {
+            return;
+        }
         DrawDiffuseMap();
         if (RealTimeDiffuse)
         {
@@ -82,6 +91,8 @@ public class RenderTerrainMap : MonoBehaviour
 
     void UpdateTex()
     {
+        if (!camToDrawWith || tempTex == null) return;
+
         camToDrawWith.enabled = true;
         camToDrawWith.targetTexture = tempTex;
         Shader.SetGlobalTexture("_TerrainDiffuse", tempTex);
@@ -93,6 +104,8 @@ public class RenderTerrainMap : MonoBehaviour
 
     void DrawToMap(string target)
     {
+        if (!camToDrawWith || tempTex == null) return;
+
         camToDrawWith.enabled = true;
         camToDrawWith.targetTexture = tempTex;
         camToDrawWith.depthTextureMode = DepthTextureMode.Depth;
@@ -105,18 +118,30 @@ public class RenderTerrainMap : MonoBehaviour
         camToDrawWith.enabled = false;
     }
 
-    void SetUpCam()
+    bool SetUpCam()
     {
         if (camToDrawWith == null)
         {
             camToDrawWith = GetComponentInChildren<Camera>();
         }
+
+        if (camToDrawWith == null)
+        {
+            return false;
+        }
+
         float size = bounds.size.magnitude;
+        if (size < 0.1f)
+        {
+            size = 10f;
+        }
+
         camToDrawWith.cullingMask = layer;
         camToDrawWith.orthographicSize = size / adjustScaling;
         camToDrawWith.transform.parent = null;
         camToDrawWith.transform.position = bounds.center + new Vector3(0, bounds.extents.y + 5f, 0);
         camToDrawWith.transform.parent = gameObject.transform;
+        return true;
     }
 
 }

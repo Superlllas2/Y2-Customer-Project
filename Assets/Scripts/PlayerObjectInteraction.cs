@@ -113,7 +113,7 @@ public class PlayerInteraction : MonoBehaviour
                     grabbedPipe = pipeComponent;
                     grabbedPipe.SetHeldState(true);
                     grabbedObjectRb.useGravity = false; // Disable gravity while holding the object
-                    grabbedObjectRb.drag = 10; // Setting drug to better the rotation
+                    grabbedObjectRb.linearDamping = 10; // Higher damping while holding for stabler rotation
                 }
             }
             else
@@ -161,7 +161,7 @@ public class PlayerInteraction : MonoBehaviour
 
         // Move the grabbed object towards the position
         Vector3 directionToHoldPoint = (holdPosition - grabbedObjectRb.position);
-        grabbedObjectRb.velocity = directionToHoldPoint * grabSpeed; // Move the object toward the hold position
+        grabbedObjectRb.linearVelocity = directionToHoldPoint * grabSpeed; // Move the object toward the hold position
     }
 
     void ReleaseObject()
@@ -175,7 +175,7 @@ public class PlayerInteraction : MonoBehaviour
         grabbedPipe = null;
 
         grabbedObjectRb.useGravity = true; // Re-enable gravity when releasing
-        grabbedObjectRb.drag = 1; // Reset the drag value to default
+        grabbedObjectRb.linearDamping = 1; // Reset damping when released
 
         // Apply a forward force in the direction of the camera when releasing the object
         grabbedObjectRb.AddForce(cam.transform.forward * throwForce, ForceMode.Impulse);

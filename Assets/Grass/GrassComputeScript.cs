@@ -347,16 +347,14 @@ public class GrassComputeScript : MonoBehaviour
     // LateUpdate is called after all Update calls
     private void Update()
     {
-        // If in edit mode, we need to update the shaders each Update to make sure settings changes are applied
-        // Don't worry, in edit mode, Update isn't called each frame
-        if (!Application.isPlaying && autoUpdate && !m_fastMode)
+        // In edit mode, refresh shader constants without tearing down GPU buffers every frame
+        if (!Application.isPlaying && autoUpdate && !m_fastMode && m_Initialized)
         {
-            OnDisable();
-            OnEnable();
+            SetGrassDataBase(true);
         }
 
         // If not initialized, do nothing (creating zero-length buffer will crash)
-        if (!m_Initialized)
+        if (!m_Initialized || m_InstantiatedComputeShader == null || m_SourceVertBuffer == null)
         {
             // Initialization is not done, please check if there are null components
             // or just because there is not vertex being painted.
@@ -377,6 +375,12 @@ public class GrassComputeScript : MonoBehaviour
         }
         if (m_DispatchSize > 0)
         {
+            // Ensure buffers stay bound (Unity 6 can drop bindings on compute clones after domain reload)
+            m_InstantiatedComputeShader.SetBuffer(m_IdGrassKernel, "_SourceVertices", m_SourceVertBuffer);
+            m_InstantiatedComputeShader.SetBuffer(m_IdGrassKernel, "_DrawTriangles", m_DrawBuffer);
+            m_InstantiatedComputeShader.SetBuffer(m_IdGrassKernel, "_IndirectArgsBuffer", m_ArgsBuffer);
+            m_InstantiatedComputeShader.SetBuffer(m_IdGrassKernel, "_VisibleIDBuffer", m_VisibleIDBuffer);
+
             // Dispatch the grass shader. It will run on the GPU
             m_InstantiatedComputeShader.Dispatch(m_IdGrassKernel, m_DispatchSize, 1, 1);
             // DrawProceduralIndirect queues a draw call up for our generated mesh
@@ -399,7 +403,7 @@ public class GrassComputeScript : MonoBehaviour
         {
             m_InstantiatedComputeShader.SetFloat("_MinFadeDist", currentPresets.minFadeDistance);
             m_InstantiatedComputeShader.SetFloat("_MaxFadeDist", currentPresets.maxDrawDistance);
-            interactors = (ShaderInteractor[])FindObjectsOfType(typeof(ShaderInteractor));
+            interactors = FindObjectsByType<ShaderInteractor>();
         }
         else
         {
@@ -454,18 +458,23 @@ public class GrassComputeScript : MonoBehaviour
         // variables sent to the shader every frame
         m_InstantiatedComputeShader.SetFloat("_Time", Time.time);
         m_InstantiatedComputeShader.SetMatrix("_LocalToWorld", transform.localToWorldMatrix);
-        if (interactors.Length > 0)
+        if (interactors != null && interactors.Length > 0)
         {
             Vector4[] positions = new Vector4[interactors.Length];
 
             for (int i = 0; i < interactors.Length; i++)
             {
+                if (!interactors[i]) continue;
                 positions[i] = new Vector4(interactors[i].transform.position.x, interactors[i].transform.position.y, interactors[i].transform.position.z,
                 interactors[i].radius);
 
             }
             m_InstantiatedComputeShader.SetVectorArray(shaderID, positions);
             m_InstantiatedComputeShader.SetFloat("_InteractorsLength", interactors.Length);
+        }
+        else
+        {
+            m_InstantiatedComputeShader.SetFloat("_InteractorsLength", 0);
         }
         if (m_MainCamera != null)
         {

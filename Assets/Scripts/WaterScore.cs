@@ -14,7 +14,7 @@ public class WaterScore : MonoBehaviour
         {
             var pos1 = new Vector2(other.transform.position.x, other.transform.position.z);
             var pos2 = new Vector2(transform.position.x, transform.position.z);
-            var playerScript = FindObjectOfType<Player>();
+            var playerScript = FindAnyObjectByType<Player>();
             if (playerScript)
             {
                 playerScript.IncrementPlayerScore(CalculateScore(Vector2.Distance(pos1, pos2)));

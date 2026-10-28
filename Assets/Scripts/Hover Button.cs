@@ -7,7 +7,6 @@ public class HoverButton : MonoBehaviour
 
     private Vector3 originalScale; // Store the original scale
     private Vector3 targetScale; // The scale we are transitioning towards
-    private bool isHovered = false;
 
     void Start()
     {
@@ -22,15 +21,11 @@ public class HoverButton : MonoBehaviour
 
     private void OnMouseEnter()
     {
-        Debug.Log("MouseHovering");
         targetScale = originalScale * hoverScaleMultiplier;
-        isHovered = true;
     }
 
     private void OnMouseExit()
     {
-        Debug.Log("MouseNotHovering");
         targetScale = originalScale;
-        isHovered = false;
     }
 }

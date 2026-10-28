@@ -80,9 +80,9 @@ public class PlayerMovement : MonoBehaviour
 
         // Apply drag when grounded, zero drag when in air
         if (grounded)
-            rb.drag = groundDrag;
+            rb.linearDamping = groundDrag;
         else
-            rb.drag = 0;
+            rb.linearDamping = 0;
         
         CheckIfMoving();
     }
@@ -137,7 +137,7 @@ public class PlayerMovement : MonoBehaviour
     private void SpeedControl()
     {
         // Get player's velocity, excluding the Y axis (vertical axis)
-        var flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+        var flatVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
 
         // Limit velocity to the current movement speed (walk or sprint)
         var currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
@@ -145,14 +145,14 @@ public class PlayerMovement : MonoBehaviour
         if (flatVel.magnitude > currentSpeed)
         {
             var limitedVel = flatVel.normalized * currentSpeed;
-            rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+            rb.linearVelocity = new Vector3(limitedVel.x, rb.linearVelocity.y, limitedVel.z);
         }
     }
 
     private void Jump()
     {
         // Reset Y velocity before applying jump force
-        rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+        rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
 
         // Apply jump force
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);

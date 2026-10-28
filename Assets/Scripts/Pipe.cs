@@ -1,7 +1,4 @@
-using System;
-using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class Pipe : MonoBehaviour
 {
@@ -10,229 +7,129 @@ public class Pipe : MonoBehaviour
 
     private PlayerInteraction playerInteraction;
 
-    public Transform[] ends; //TODO changing here so you can have multiple ends and small code. Nice :)
-
     public LayerMask pickable; // Layer for detecting other pipes
     public float snapDistance = 1f; // Distance threshold for snapping pipes together
 
-    private bool isBeingHeld = false; // Is the pipe currently being held by the player?
-    public bool isSnapped = false; // Is the pipe snapped and connected to another object?
+    private bool isBeingHeld;
+    public bool isSnapped;
     private Rigidbody rb;
-    public string connectedAxis = null;
-    public Vector3[] connectionDirections;
 
     // The next pipe in the series
     public Pipe previousPipe;
     public Pipe nextPipe;
-    public bool isConnected = false;
+    public bool isConnected;
     public PipeType pipeType;
+
+    private const float MinOutwardSqrMagnitude = 1e-6f;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        playerInteraction = FindObjectOfType<PlayerInteraction>();
+        playerInteraction = FindAnyObjectByType<PlayerInteraction>();
     }
 
     void Update()
     {
         // Check for pipe connection only if the pipe is being held and not already snapped
-        if (isBeingHeld && !isSnapped && !playerInteraction.isInRotationMode)
+        if (isBeingHeld && !isSnapped && playerInteraction && !playerInteraction.isInRotationMode)
         {
             CheckForConnection();
         }
     }
 
+    Transform[] GetEnds()
+    {
+        return new[] { startEnd, endEnd };
+    }
+
+    Vector3 GetOutward(Transform end)
+    {
+        Vector3 fromRoot = end.position - transform.position;
+        if (fromRoot.sqrMagnitude > MinOutwardSqrMagnitude)
+        {
+            return fromRoot.normalized;
+        }
+
+        return end.forward;
+    }
+
     // Check if the held pipe is close enough to connect to another pipe
     void CheckForConnection()
     {
-        Collider[] nearbyPipes = Physics.OverlapSphere(startEnd.position, snapDistance, pickable);
+        if (!startEnd || !endEnd)
+        {
+            return;
+        }
 
-        foreach (Collider other in nearbyPipes)
+        float reachFromCenter = 0f;
+        foreach (Transform end in GetEnds())
+        {
+            reachFromCenter = Mathf.Max(reachFromCenter, Vector3.Distance(transform.position, end.position));
+        }
+
+        Collider[] nearby = Physics.OverlapSphere(transform.position, reachFromCenter + snapDistance, pickable);
+
+        float bestDistance = snapDistance;
+        Transform bestMyEnd = null;
+        Transform bestTheirEnd = null;
+        Pipe bestOther = null;
+
+        foreach (Collider other in nearby)
         {
             Pipe otherPipe = other.GetComponent<Pipe>();
-
-            if (otherPipe && otherPipe != this)
+            if (!otherPipe || otherPipe == this || !otherPipe.startEnd || !otherPipe.endEnd)
             {
-                if (Vector3.Distance(startEnd.position, otherPipe.startEnd.position) <= snapDistance)
+                continue;
+            }
+
+            foreach (Transform myEnd in GetEnds())
+            {
+                foreach (Transform theirEnd in otherPipe.GetEnds())
                 {
-                    // Debug.Log("startEnd.position, otherPipe.startEnd.position");
-                    AlignAndSnapPipe(otherPipe.startEnd, otherPipe, startEnd);
-                    return;
+                    float distance = Vector3.Distance(myEnd.position, theirEnd.position);
+                    if (distance <= bestDistance)
+                    {
+                        bestDistance = distance;
+                        bestMyEnd = myEnd;
+                        bestTheirEnd = theirEnd;
+                        bestOther = otherPipe;
+                    }
                 }
-                // --------
-                // if (Vector3.Distance(startEnd.position, otherPipe.endEnd.position) <= snapDistance)
-                // {
-                //     Debug.Log("startEnd.position, otherPipe.endEnd.position");
-                //     AlignAndSnapPipe(otherPipe.endEnd, otherPipe, startEnd);
-                //     return;
-                // }
-                // --------
             }
         }
 
-        nearbyPipes = Physics.OverlapSphere(endEnd.position, snapDistance, pickable);
-
-        foreach (Collider other in nearbyPipes)
+        if (bestOther != null)
         {
-            Pipe otherPipe = other.GetComponent<Pipe>();
-
-            if (otherPipe && otherPipe != this)
-            {
-                // --------
-                // // Check if this pipe's endEnd is close enough to the other pipe's ends
-                // if (Vector3.Distance(endEnd.position, otherPipe.startEnd.position) <= snapDistance)
-                // {
-                //     Debug.Log("endEnd.position, otherPipe.startEnd.position");
-                //     AlignAndSnapPipe(otherPipe.startEnd, otherPipe, endEnd);
-                //     return;
-                // }
-                // --------
-                if (Vector3.Distance(endEnd.position, otherPipe.endEnd.position) <= snapDistance)
-                {
-                    // Debug.Log("endEnd.position, otherPipe.endEnd.position");
-                    AlignAndSnapPipe(otherPipe.endEnd, otherPipe, endEnd);
-                    return;
-                }
-            }
+            AlignAndSnapPipe(bestTheirEnd, bestOther, bestMyEnd);
         }
     }
 
     // Align and snap the held pipe to the target pipe
-    private void AlignAndSnapPipe(Transform endPositionOnTheOtherPipe, Pipe otherPipe, Transform endPositionThisPipe)
+    private void AlignAndSnapPipe(Transform theirEnd, Pipe otherPipe, Transform myEnd)
     {
-        var bestDirection = 0;
-        var bestDot = float.MinValue;
-        var toOtherPipe = endPositionOnTheOtherPipe.position - transform.position;
-        // Debug.Log("Desired connection direction: " + toOtherPipe);
-        for (int i = 0; i < connectionDirections.Length; i++)
+        Vector3 myOutward = GetOutward(myEnd);
+        Vector3 theirOutward = otherPipe.GetOutward(theirEnd);
+
+        if (myOutward.sqrMagnitude < MinOutwardSqrMagnitude ||
+            theirOutward.sqrMagnitude < MinOutwardSqrMagnitude)
         {
-            var worldDir = transform.TransformDirection(connectionDirections[i]);
-            var newDot = Vector3.Dot(worldDir, toOtherPipe);
-            // Debug.Log("Direction " + worldDir + " gives dot " + newDot);
-            if (newDot < bestDot)
-            {
-                bestDot = newDot;
-                bestDirection = i;
-            }
+            return;
         }
 
-        // Debug.Log("Connection direction for pipe: " + connectionDirections[bestDirection]);
+        Vector3 targetOutward = -theirOutward;
+        transform.rotation = Quaternion.FromToRotation(myOutward, targetOutward) * transform.rotation;
+        transform.position += theirEnd.position - myEnd.position;
 
-        // // hardcoded for now - TODO: Pipe script has method that returns this (world space) direction when a connection point is given
-        // Vector3 connectionDirection = new Vector3(0, 0, 0);
-        // // if our best direction is say (1,0,0), then we want to say: transform.right = -connectionDirection;
-        // // if our best direction is say (0,0,-1), then we want to say: transform.forward = connectionDirection;
-        //
-        // if (connectionDirections[bestDirection].x >= 0.99f)
-        // {
-        //     transform.right = -connectionDirection;
-        //     connectedAxis = "X";
-        //     Debug.Log("X");
-        // }
-        // else if (connectionDirections[bestDirection].z >= 0.99f)
-        // {
-        //     transform.forward = -connectionDirection;
-        //     connectedAxis = "Z";
-        //     Debug.Log("Z");
-        // }
-        // else if (connectionDirections[bestDirection].z <= -0.99f)
-        // {
-        //     transform.forward = connectionDirection;
-        //     connectedAxis = "Z";
-        //     Debug.Log("Z");
-        //
-        // }
-        // else if (connectionDirections[bestDirection].x >= -0.99f)
-        // {
-        //     transform.right = connectionDirection;
-        //     connectedAxis = "X";
-        //     Debug.Log("X");
-        // }
-        // else if (connectionDirections[bestDirection].y >= 0.99f)
-        // {
-        //     transform.up = -connectionDirection;
-        //     connectedAxis = "Y";
-        //     Debug.Log("Y");
-        // }
-        // else if (connectionDirections[bestDirection].y >= -0.99f)
-        // {
-        //     transform.up = connectionDirection;
-        //     connectedAxis = "Y";
-        //     Debug.Log("Y");
-        // }
-        
-        // ----------------
-        // Quaternion desired = Quaternion.LookRotation(-connectionDirection);
-        // Quaternion current = Quaternion.LookRotation(connectionDirections[bestDirection]);
-        // Quaternion fromTo = desired * Quaternion.Inverse(current);
-        // float angle; 
-        // fromTo.ToAngleAxis(out angle, out Vector3 whatever);
-        // Debug.Log("Needed rotation: "+angle);
-        // transform.rotation = fromTo * transform.rotation;
-        // ----------------
-
-        if (pipeType == PipeType.Bend)
-        {
-            Vector3 distanceDifference = endPositionOnTheOtherPipe.position - endPositionThisPipe.position;
-            transform.position += distanceDifference;
-        }
-        else if (pipeType == PipeType.Straight)
-        {
-            if (otherPipe.pipeType == PipeType.Bend)
-            {
-                // SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
-                // // var childPivotPoint = endPositionThisPipe.position;
-                // // transform.position = childPivotPoint;
-                // // transform.RotateAround(childPivotPoint, Vector3.forward, -90);
-                // // transform.rotation = Quaternion.Euler(0, 0, 90) * transform.rotation;
-                // // transform.rotation = Quaternion.identity;
-                // // transform.rotation *= Quaternion.Euler(0, 0, 0);
-                // transform.SetParent(endPositionOnTheOtherPipe);
-                // transform.parent.rotation = Quaternion.Euler(0, 0, -90) * transform.rotation;
-
-                Vector3 distanceDifference = endPositionOnTheOtherPipe.position - endPositionThisPipe.position;
-                transform.position += distanceDifference;
-
-                // otherPipe.endEnd.Rotate(); // rotates the PARENT, which acts as a new pivot point
-                // transform.SetParent(null);
-            }
-            else
-            {
-                SnapPipeToTarget(endPositionOnTheOtherPipe, otherPipe, endPositionThisPipe);
-            }
-        }
-
-        // Mark the pipes as connected
         previousPipe = otherPipe;
         otherPipe.nextPipe = this;
 
-        // Mark the pipes as connected
         isConnected = true;
-        LockPipe(); // Lock the pipe in place
-    }
-
-    // Snap the held pipe's end to the target end
-    void SnapPipeToTarget(Transform endPositionOnTheOtherPipe, Pipe otherPipe, Transform endPositionThisPipe)
-    {
-        Vector3 offset = transform.position - endPositionOnTheOtherPipe.position;
-        StartCoroutine(RotateAfterOneFrame(offset, otherPipe.transform.rotation, endPositionThisPipe,
-            endPositionOnTheOtherPipe));
-    }
-
-    // Credit to: Yvans
-    private IEnumerator RotateAfterOneFrame(Vector3 moveTo, Quaternion rotateTo, Transform mine, Transform targetEnd)
-    {
-        transform.rotation = rotateTo;
-        var halfDistance = transform.position - mine.position;
-        var offset = transform.position - targetEnd.position;
-        transform.position -= (offset + halfDistance);
-        yield return null;
+        LockPipe();
     }
 
     // Lock the pipe in place by making it kinematic and disabling further movement
     void LockPipe()
     {
-        Debug.Log("locked a pipe");
         isSnapped = true;
         rb.isKinematic = true; // Disable physics to lock the pipe in place
         isBeingHeld = false; // Pipe is no longer being held by the player

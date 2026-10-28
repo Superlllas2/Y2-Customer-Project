@@ -97,110 +97,111 @@ public class GrassPainterWindow : EditorWindow
     private void OnGUI()
     {
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
-        if (GUILayout.Button("Manual Update"))
+        try
         {
-            grassCompute.Reset();
-        }
-        grassObject = (GameObject)EditorGUILayout.ObjectField("Grass Compute Object", grassObject, typeof(GameObject), true);
-
-
-
-
-        if (grassObject == null)
-        {
-            grassObject = FindObjectOfType<GrassComputeScript>()?.gameObject;
-
-        }
-
-
-        if (grassObject != null)
-        {
-            grassCompute = grassObject.GetComponent<GrassComputeScript>();
-            grassCompute.currentPresets = (SO_GrassSettings)EditorGUILayout.ObjectField("Grass Settings Object", grassCompute.currentPresets, typeof(SO_GrassSettings), false);
-
-
-
-            if (grassCompute.SetGrassPaintedDataList.Count > 0)
+            if (GUILayout.Button("Manual Update") && grassCompute != null)
             {
-                grassData = grassCompute.SetGrassPaintedDataList;
-                grassAmount = grassData.Count;
+                grassCompute.Reset();
+            }
+            grassObject = (GameObject)EditorGUILayout.ObjectField("Grass Compute Object", grassObject, typeof(GameObject), true);
+
+            if (grassObject == null)
+            {
+                grassObject = FindAnyObjectByType<GrassComputeScript>()?.gameObject;
+            }
+
+            if (grassObject != null)
+            {
+                grassCompute = grassObject.GetComponent<GrassComputeScript>();
+                if (grassCompute == null)
+                {
+                    EditorGUILayout.HelpBox("Selected object has no GrassComputeScript.", MessageType.Warning);
+                    return;
+                }
+
+                grassCompute.currentPresets = (SO_GrassSettings)EditorGUILayout.ObjectField("Grass Settings Object", grassCompute.currentPresets, typeof(SO_GrassSettings), false);
+
+                if (grassCompute.SetGrassPaintedDataList.Count > 0)
+                {
+                    grassData = grassCompute.SetGrassPaintedDataList;
+                    grassAmount = grassData.Count;
+                }
+                else
+                {
+                    grassData.Clear();
+                }
+
+                if (grassCompute.currentPresets == null)
+                {
+                    EditorGUILayout.LabelField("No Grass Settings Set, create or assign one first. \n Create > Utility> Grass Settings", GUILayout.Height(150));
+                    return;
+                }
             }
             else
             {
-                grassData.Clear();
-            }
-
-
-            if (grassCompute.currentPresets == null)
-            {
-                EditorGUILayout.LabelField("No Grass Settings Set, create or assign one first. \n Create > Utility> Grass Settings", GUILayout.Height(150));
-                EditorGUILayout.EndScrollView();
+                if (GUILayout.Button("Create Grass Object"))
+                {
+                    if (EditorUtility.DisplayDialog("Create a new Grass Object?",
+                       "No Grass Object Found, create a new Object?", "Yes", "No"))
+                    {
+                        CreateNewGrassObject();
+                    }
+                }
+                EditorGUILayout.LabelField("No Grass System Holder found, create a new one", EditorStyles.label);
                 return;
             }
-        }
-        else
-        {
 
-            if (GUILayout.Button("Create Grass Object"))
+            EditorGUILayout.Separator();
+
+            EditorGUILayout.BeginHorizontal();
+            grassCompute.currentPresets.materialToUse = (Material)EditorGUILayout.ObjectField("Grass Material", grassCompute.currentPresets.materialToUse, typeof(Material), false);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Separator();
+            EditorGUILayout.LabelField("Total Grass Amount: " + grassAmount.ToString(), EditorStyles.label);
+            EditorGUILayout.BeginHorizontal();
+            mainTab_current = GUILayout.Toolbar(mainTab_current, mainTabBarStrings, GUILayout.Height(30));
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Separator();
+            EditorGUILayout.Separator();
+
+            switch (mainTab_current)
             {
-                if (EditorUtility.DisplayDialog("Create a new Grass Object?",
-                   "No Grass Object Found, create a new Object?", "Yes", "No"))
+                case 0: //paint
+                    ShowPaintPanel();
+                    break;
+                case 1: // flood
+                    ShowFloodPanel();
+                    break;
+                case 2: // generate
+                    ShowGeneratePanel();
+                    break;
+                case 3: //settings
+                    ShowMainSettingsPanel();
+                    break;
+            }
+
+            if (GUILayout.Button("Clear Grass"))
+            {
+                if (EditorUtility.DisplayDialog("Clear All Grass?",
+                   "Are you sure you want to clear the grass?", "Clear", "Don't Clear"))
                 {
-                    CreateNewGrassObject();
+                    ClearMesh();
                 }
-
-
             }
-            EditorGUILayout.LabelField("No Grass System Holder found, create a new one", EditorStyles.label);
-            EditorGUILayout.EndScrollView();
-            return;
 
-        }
-        EditorGUILayout.Separator();
-
-        EditorGUILayout.BeginHorizontal();
-        grassCompute.currentPresets.materialToUse = (Material)EditorGUILayout.ObjectField("Grass Material", grassCompute.currentPresets.materialToUse, typeof(Material), false);
-
-        EditorGUILayout.EndHorizontal();
-        EditorGUILayout.Separator();
-        EditorGUILayout.LabelField("Total Grass Amount: " + grassAmount.ToString(), EditorStyles.label);
-        EditorGUILayout.BeginHorizontal();
-        mainTab_current = GUILayout.Toolbar(mainTab_current, mainTabBarStrings, GUILayout.Height(30));
-        EditorGUILayout.EndHorizontal();
-        EditorGUILayout.Separator();
-        EditorGUILayout.Separator();
-
-        switch (mainTab_current)
-        {
-            case 0: //paint
-                ShowPaintPanel();
-                break;
-            case 1: // flood
-                ShowFloodPanel();
-                break;
-
-            case 2: // generate
-                ShowGeneratePanel();
-                break;
-
-            case 3: //settings
-                ShowMainSettingsPanel();
-                break;
-        }
-
-        if (GUILayout.Button("Clear Grass"))
-        {
-            if (EditorUtility.DisplayDialog("Clear All Grass?",
-               "Are you sure you want to clear the grass?", "Clear", "Don't Clear"))
+            if (toolSettings != null)
             {
-                ClearMesh();
+                EditorUtility.SetDirty(toolSettings);
+            }
+            if (grassCompute != null && grassCompute.currentPresets != null)
+            {
+                EditorUtility.SetDirty(grassCompute.currentPresets);
             }
         }
-
-        EditorGUILayout.EndScrollView();
-
-        EditorUtility.SetDirty(toolSettings);
-        EditorUtility.SetDirty(grassCompute.currentPresets);
+        finally
+        {
+            EditorGUILayout.EndScrollView();
+        }
     }
 
     void ShowFloodPanel()
