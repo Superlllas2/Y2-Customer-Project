@@ -217,37 +217,7 @@ public class PlayerInteraction : MonoBehaviour
     
     private void DisconnectPipesUsingBFS(Pipe initialPipe)
     {
-        Queue<Pipe> pipesToDisconnect = new Queue<Pipe>();
-        pipesToDisconnect.Enqueue(initialPipe);
-
-        while (pipesToDisconnect.Count > 0)
-        {
-            Pipe currentPipe = pipesToDisconnect.Dequeue();
-
-            if (currentPipe == null || !currentPipe.isConnected) continue;
-
-            currentPipe.isConnected = false;
-            currentPipe.isSnapped = false;
-            currentPipe.SetHeldState(false);
-            Debug.Log($"Disconnected pipe: {currentPipe.name}");
-
-            // Enqueue the next connected pipe, if it exists
-            if (currentPipe.nextPipe != null)
-            {
-                pipesToDisconnect.Enqueue(currentPipe.nextPipe);
-                currentPipe.nextPipe.previousPipe = null; // Remove reference to current pipe
-                currentPipe.nextPipe = null; // Remove the next pipe reference from the current pipe
-            }
-
-            // THIS IS FUNNY
-            // // Enqueue the previous pipe, if it exists
-            // if (currentPipe.previousPipe != null)
-            // {
-            //     pipesToDisconnect.Enqueue(currentPipe.previousPipe);
-            //     currentPipe.previousPipe.nextPipe = null; // Remove reference to current pipe
-            //     currentPipe.previousPipe = null; // Remove the previous pipe reference from the current pipe
-            // }
-        }
+        PipeNetwork.DisconnectFrom(initialPipe);
     }
 
 }

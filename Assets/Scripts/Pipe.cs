@@ -124,6 +124,7 @@ public class Pipe : MonoBehaviour
         otherPipe.nextPipe = this;
 
         isConnected = true;
+        otherPipe.isConnected = true;
         LockPipe();
     }
 

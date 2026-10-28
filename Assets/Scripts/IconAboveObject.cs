@@ -48,14 +48,14 @@ public class IconAboveObject : MonoBehaviour
             }
 
             // Handle the state change if the second state is needed
-            if (isSecondStateNeeded && !wasHouseWatered)
+            if (isSecondStateNeeded && !wasHouseWatered && !wasHouseDead)
             {
                 currentTimer -= Time.deltaTime;
                 if (currentTimer <= 0f)
                 {
+                    currentTimer = 0f;
                     ChangeIcon(thirdPrefab);
                     wasHouseDead = true;
-                    currentTimer = timer; // Reset the timer
                 }
             }
         }

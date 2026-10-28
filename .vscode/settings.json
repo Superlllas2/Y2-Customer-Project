@@ -1,0 +1,16 @@
+{
+  "dotnet.defaultSolution": "Y2-Customer-Project.sln",
+  "dotnet.server.useOmnisharp": false,
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/Library": true,
+    "**/Temp": true,
+    "**/Obj": true,
+    "**/obj": true
+  },
+  "search.exclude": {
+    "**/Library": true,
+    "**/Temp": true,
+    "**/Logs": true
+  }
+}

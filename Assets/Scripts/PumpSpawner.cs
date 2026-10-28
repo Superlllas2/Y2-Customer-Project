@@ -48,6 +48,15 @@ public class Pump : MonoBehaviour
     private void PlacePump()
     {
         var spawnPosition = playerOrientation + (childTransform.forward * 3);
-        Instantiate(pump, new Vector3(spawnPosition.x, ground.transform.position.y + halfSizeY - 0.2f, spawnPosition.z), childTransform.rotation);
+        var instance = Instantiate(
+            pump,
+            new Vector3(spawnPosition.x, ground.transform.position.y + halfSizeY - 0.2f, spawnPosition.z),
+            childTransform.rotation);
+
+        if (instance && !instance.GetComponent<PipeNetworkSource>())
+        {
+            var source = instance.AddComponent<PipeNetworkSource>();
+            source.connectRadius = 2f;
+        }
     }
 }
