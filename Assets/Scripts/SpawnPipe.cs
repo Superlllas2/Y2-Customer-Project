@@ -26,17 +26,22 @@ public class SpawnPipe : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (GameInput.Instance == null || GameInput.Instance.IsControlsOpen)
         {
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
+            return;
+        }
 
-            if (Physics.Raycast(ray, out hit))
+        if (!GameInput.Instance.ClickPressed || Camera.main == null)
+        {
+            return;
+        }
+
+        var ray = Camera.main.ScreenPointToRay(GameInput.Instance.PointerPosition);
+        if (Physics.Raycast(ray, out var hit))
+        {
+            if (hit.collider && hit.collider.gameObject == gameObject && hit.collider.CompareTag(targetTag))
             {
-                if (hit.collider && hit.collider.gameObject == gameObject && hit.collider.CompareTag(targetTag))
-                {
-                    SpawnPrefab();
-                }
+                SpawnPrefab();
             }
         }
     }

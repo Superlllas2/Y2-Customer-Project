@@ -26,7 +26,8 @@ public class WaterSpawn : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Keypad9) || Input.GetKeyDown(KeyCode.Alpha9))
+        var keyboard = UnityEngine.InputSystem.Keyboard.current;
+        if (keyboard != null && (keyboard.digit9Key.wasPressedThisFrame || keyboard.numpad9Key.wasPressedThisFrame))
         {
             if (spawnedPrefabs != null)
             {

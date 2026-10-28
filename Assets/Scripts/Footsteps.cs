@@ -1,39 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Footsteps : MonoBehaviour
 {
     public PlayerMovement PlayerMovement;
-    private AudioManager audioManager;
-    
-    // private IEnumerator PlayStepSound()
-    // {
-    //     while (true)
-    //     {
-    //         audioManager.PlaySFX(audioManager.step);
-    //         yield return new WaitForSeconds(stepInterval);
-    //     }
-    // }
-    
+
     void Update()
     {
-        // Corrected condition with parentheses
-        if ((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D)) && PlayerMovement.grounded)
+        // Placeholder for step SFX driven by Input System move/sprint.
+        if (GameInput.Instance == null || PlayerMovement == null || !PlayerMovement.grounded)
         {
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                // audioManager.PlaySFX(audioManager.jump);
-            }
-            else
-            {
-                // audioManager.PlaySFX(audioManager.step);
-            }
+            return;
         }
-        else
-        {
 
+        if (GameInput.Instance.MoveValue.sqrMagnitude <= 0.01f)
+        {
+            return;
         }
+
+        // audioManager.PlaySFX(GameInput.Instance.SprintHeld ? audioManager.jump : audioManager.step);
     }
-
 }

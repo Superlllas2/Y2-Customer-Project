@@ -34,7 +34,7 @@ public class Pump : MonoBehaviour
             playerOrientation = childTransform.position;
         }
         
-        if (Input.GetKeyDown(KeyCode.Keypad8) || Input.GetKeyDown(KeyCode.Alpha8))
+        if (GameInput.Instance != null && GameInput.Instance.SpawnPumpPressed)
         {
             if (placedPumps >= numPumpForSpawn)
             {

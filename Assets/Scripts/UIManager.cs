@@ -1,7 +1,5 @@
-using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -12,7 +10,9 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI timerText;
 
     public IconAboveObject iconAboveObject;
-    
+
+    private int lastDisplayedTimer = int.MinValue;
+
     private void Awake()
     {
         if (Instance == null)
@@ -27,11 +27,26 @@ public class UIManager : MonoBehaviour
 
     private void Update()
     {
-        timerText.text = "Time left: " + (int)iconAboveObject.currentTimer;
+        if (!timerText || !iconAboveObject)
+        {
+            return;
+        }
+
+        var secondsLeft = (int)iconAboveObject.currentTimer;
+        if (secondsLeft == lastDisplayedTimer)
+        {
+            return;
+        }
+
+        lastDisplayedTimer = secondsLeft;
+        timerText.SetText("Time left: {0}", secondsLeft);
     }
 
     public void UpdateScore(int score)
     {
-        scoreText.text = "Score: " + score;
+        if (scoreText)
+        {
+            scoreText.SetText("Score: {0}", score);
+        }
     }
 }

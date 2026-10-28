@@ -11,13 +11,21 @@ public static class CloseBrokenEditorWindows
     static CloseBrokenEditorWindows()
     {
         EditorApplication.delayCall += CloseFallbacks;
-        EditorApplication.playModeStateChanged += _ => EditorApplication.delayCall += CloseFallbacks;
     }
 
     [MenuItem("Tools/Close Broken Editor Windows")]
     public static void CloseFallbacks()
     {
-        var windows = Resources.FindObjectsOfTypeAll<EditorWindow>();
+        EditorWindow[] windows;
+        try
+        {
+            windows = Resources.FindObjectsOfTypeAll<EditorWindow>();
+        }
+        catch
+        {
+            return;
+        }
+
         var closed = 0;
 
         foreach (var window in windows)
@@ -27,13 +35,31 @@ public static class CloseBrokenEditorWindows
                 continue;
             }
 
-            var typeName = window.GetType().Name;
-            var title = window.titleContent != null ? window.titleContent.text : string.Empty;
+            string typeName;
+            string title;
+            try
+            {
+                typeName = window.GetType().Name;
+                title = window.titleContent != null ? window.titleContent.text : string.Empty;
+            }
+            catch
+            {
+                continue;
+            }
 
-            if (typeName == "FallbackEditorWindow" || title == "Failed to load")
+            if (typeName != "FallbackEditorWindow" && title != "Failed to load")
+            {
+                continue;
+            }
+
+            try
             {
                 window.Close();
                 closed++;
+            }
+            catch
+            {
+                // Fallback windows can already be half-destroyed; ignore close failures.
             }
         }
 

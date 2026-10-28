@@ -1,0 +1,45 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="root" class="root">
+        <ui:VisualElement name="panel" class="panel">
+            <ui:Label text="CONTROLS" class="title" />
+            <ui:Label text="Press H or Tab to close" class="subtitle" />
+            <ui:VisualElement name="rows" class="rows">
+                <ui:VisualElement class="row">
+                    <ui:Label text="Sprint" class="action" />
+                    <ui:Label name="bind-sprint" text="Left Shift" class="key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="row">
+                    <ui:Label text="Jump" class="action" />
+                    <ui:Label name="bind-jump" text="Space" class="key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="row">
+                    <ui:Label text="Water detector" class="action" />
+                    <ui:Label name="bind-detector" text="E" class="key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="row">
+                    <ui:Label text="Grab / disconnect pipe" class="action" />
+                    <ui:Label name="bind-interact" text="LMB" class="key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="row">
+                    <ui:Label text="Rotate held pipe" class="action" />
+                    <ui:Label name="bind-rotate" text="Hold R + Mouse" class="key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="row">
+                    <ui:Label text="Spawn pipe" class="action" />
+                    <ui:Label text="LMB on spawner" class="key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="row">
+                    <ui:Label text="Spawn pump" class="action" />
+                    <ui:Label name="bind-pump" text="8" class="key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="row">
+                    <ui:Label text="Look / aim" class="action" />
+                    <ui:Label text="Mouse" class="key" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label text="WASD to move" class="footer" />
+            <ui:Button name="close-button" text="Close" class="close-btn" />
+        </ui:VisualElement>
+        <ui:Label name="hint" text="H / Tab — Controls" class="hint" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -27,18 +27,24 @@ public class PlayerInteraction : MonoBehaviour
 
     void Update()
     {
+        if (GameInput.Instance != null && GameInput.Instance.IsControlsOpen)
+        {
+            return;
+        }
+
+        var input = GameInput.Instance;
+
         // If we're in rotation mode, handle rotation
         if (isInRotationMode)
         {
-            RotateObject(); // Handle object rotation based on mouse movement
+            RotateObject();
 
-            // Exit rotation mode when Shift is released
-            if (Input.GetKeyUp(KeyCode.R))
+            if (input != null && input.RotateReleased)
             {
                 ExitRotationMode();
             }
 
-            return; // Skip the rest of the update logic if in rotation mode
+            return;
         }
 
         // Ray from the center of the screen
@@ -50,49 +56,40 @@ public class PlayerInteraction : MonoBehaviour
         {
             var outlineScript = hit.collider.gameObject.GetComponent<ObjectOutline>();
 
-            // If an object with an outline script is hit
             if (outlineScript)
             {
-                // If this is a new object, remove the outline from the previous one
                 if (lastOutlinedObject != outlineScript)
                 {
                     if (lastOutlinedObject)
                     {
-                        lastOutlinedObject.RemoveOutline(); // Remove outline
+                        lastOutlinedObject.RemoveOutline();
                     }
 
-                    outlineScript.ApplyOutline(); // Apply outline to the new object
-                    lastOutlinedObject = outlineScript; // Store the new object as the last hit
+                    outlineScript.ApplyOutline();
+                    lastOutlinedObject = outlineScript;
                 }
 
-                // Attempt to grab the object
                 TryGrabObject(hit);
             }
         }
         else
         {
-            // If we didn't hit any object, remove outline from the last hit object
             if (lastOutlinedObject)
             {
                 lastOutlinedObject.RemoveOutline();
-                lastOutlinedObject = null; // Clear the reference after removing the outline
+                lastOutlinedObject = null;
             }
         }
 
-        // Move the grabbed object while the left mouse button is held
         if (grabbedObjectRb)
         {
-            if (Input.GetKeyDown(KeyCode.R)) // Enter rotation mode when Shift is pressed
+            if (input != null && input.RotatePressed)
             {
                 EnterRotationMode();
             }
 
-            if (Input.GetKeyUp(KeyCode.LeftShift))
-            {
-            }
-
-            MoveObject(); // Move the grabbed object
-            if (Input.GetMouseButtonUp(0)) // Release the object when the left mouse button is released
+            MoveObject();
+            if (input != null && input.InteractReleased)
             {
                 ReleaseObject();
             }
@@ -101,7 +98,7 @@ public class PlayerInteraction : MonoBehaviour
 
     void TryGrabObject(RaycastHit hit)
     {
-        if (Input.GetMouseButtonDown(0)) // Check if the left mouse button is pressed
+        if (GameInput.Instance != null && GameInput.Instance.InteractPressed)
         {
             Rigidbody hitRb = hit.collider.GetComponent<Rigidbody>();
             if (!hitRb.isKinematic)
@@ -210,15 +207,12 @@ public class PlayerInteraction : MonoBehaviour
     // Rotate the grabbed object based on mouse movement
     void RotateObject()
     {
-        // Get mouse delta movement
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
+        var look = GameInput.Instance != null ? GameInput.Instance.LookDelta : Vector2.zero;
+        float mouseX = look.x * 0.01f;
+        float mouseY = look.y * 0.01f;
 
-        // Apply rotation based on mouse movement
-        grabbedObjectRb.transform.Rotate(Vector3.up, -mouseX * rotationSpeed * Time.deltaTime,
-            Space.World); // Rotate around Y axis
-        grabbedObjectRb.transform.Rotate(Vector3.right, mouseY * rotationSpeed * Time.deltaTime,
-            Space.World); // Rotate around X axis
+        grabbedObjectRb.transform.Rotate(Vector3.up, -mouseX * rotationSpeed * Time.deltaTime, Space.World);
+        grabbedObjectRb.transform.Rotate(Vector3.right, mouseY * rotationSpeed * Time.deltaTime, Space.World);
     }
     
     private void DisconnectPipesUsingBFS(Pipe initialPipe)

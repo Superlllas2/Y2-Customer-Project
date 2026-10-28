@@ -68,13 +68,9 @@ public class WaterDetector : MonoBehaviour
         }
 
 
-        if (Input.GetKeyDown(KeyCode.E) && HoldingDetector == true)  
+        if (GameInput.Instance != null && GameInput.Instance.DetectorPressed)
         {
-            HoldingDetector = false;
-        }
-        else if (Input.GetKeyDown(KeyCode.E) && HoldingDetector == false)  
-        {
-            HoldingDetector = true;
+            HoldingDetector = !HoldingDetector;
         }
 
         if (HoldingDetector == false)

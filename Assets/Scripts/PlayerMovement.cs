@@ -25,10 +25,6 @@ public class PlayerMovement : MonoBehaviour
     [Header("UI Elements")]
     public Image staminaBarImage;
 
-    [Header("Keybinds")]
-    public KeyCode jumpKey = KeyCode.Space;
-    public KeyCode sprintKey = KeyCode.LeftShift;
-
     [Header("Ground Check")]
     public float playerHeight = 2f;
     public LayerMask whatIsGround;
@@ -62,7 +58,7 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         // Disable player input and stamina management when isDisabled is true
-        if (isDisabled) return;
+        if (isDisabled || (GameInput.Instance && GameInput.Instance.IsControlsOpen)) return;
 
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
@@ -97,11 +93,12 @@ public class PlayerMovement : MonoBehaviour
 
     private void MyInput()
     {
-        horizontalInput = Input.GetAxisRaw("Horizontal");
-        verticalInput = Input.GetAxisRaw("Vertical");
+        var move = GameInput.Instance != null ? GameInput.Instance.MoveValue : Vector2.zero;
+        horizontalInput = move.x;
+        verticalInput = move.y;
 
         // Jumping
-        if (Input.GetKey(jumpKey) && readyToJump && grounded)
+        if (GameInput.Instance && GameInput.Instance.JumpPressed && readyToJump && grounded)
         {
             readyToJump = false;
             Jump();
@@ -109,7 +106,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Sprinting (only if stamina is above a minimum threshold)
-        if (Input.GetKey(sprintKey) && currentStamina > 0.6f && isMoving && !isDisabled) // Requires at least 0.6 stamina to start sprinting
+        if (GameInput.Instance && GameInput.Instance.SprintHeld && currentStamina > 0.6f && isMoving && !isDisabled)
         {
             isSprinting = true;
         }

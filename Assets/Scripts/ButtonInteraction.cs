@@ -8,25 +8,21 @@ public class ButtonAction : MonoBehaviour
 
     private void Update()
     {
-        // Handle mouse click detection
-        if (Input.GetMouseButtonDown(0))
+        if (GameInput.Instance == null || !GameInput.Instance.ClickPressed || Camera.main == null)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
+            return;
+        }
 
-            if (Physics.Raycast(ray, out hit))
+        Ray ray = Camera.main.ScreenPointToRay(GameInput.Instance.PointerPosition);
+        if (Physics.Raycast(ray, out var hit) && hit.transform == transform)
+        {
+            if (isExitButton)
             {
-                if (hit.transform == transform)
-                {
-                    if (isExitButton)
-                    {
-                        ExitGame();
-                    }
-                    else
-                    {
-                        LoadScene();
-                    }
-                }
+                ExitGame();
+            }
+            else
+            {
+                LoadScene();
             }
         }
     }

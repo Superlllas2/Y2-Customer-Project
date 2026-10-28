@@ -1,11 +1,15 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerCam : MonoBehaviour {
-    public float senseX;
-    public float senseY;
+public class PlayerCam : MonoBehaviour
+{
+    [Header("Look")]
+    [Tooltip("Horizontal look sensitivity (Inspector). Lower = slower.")]
+    public float senseX = 15f;
+    [Tooltip("Vertical look sensitivity (Inspector). Lower = slower.")]
+    public float senseY = 15f;
+
+    [Tooltip("Extra scale for Input System mouse delta (pixels).")]
+    [SerializeField] private float lookScale = 0.01f;
 
     public Transform orientation;
 
@@ -14,21 +18,29 @@ public class PlayerCam : MonoBehaviour {
 
     private void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (GameInput.Instance == null || !GameInput.Instance.IsControlsOpen)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
     private void Update()
     {
-        var mouseX = Input.GetAxisRaw("Mouse X") * Time.deltaTime * senseX;
-        var mouseY = Input.GetAxisRaw("Mouse Y") * Time.deltaTime * senseY;
+        if (GameInput.Instance != null && GameInput.Instance.IsControlsOpen)
+        {
+            return;
+        }
+
+        var look = GameInput.Instance != null ? GameInput.Instance.LookDelta : Vector2.zero;
+        var mouseX = look.x * senseX * lookScale;
+        var mouseY = look.y * senseY * lookScale;
 
         yRotation += mouseX;
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
-        
+
         transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
-        
     }
 }
