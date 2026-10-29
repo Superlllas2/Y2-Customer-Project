@@ -1,34 +1,51 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.HighDefinition;
 
 public class Pipe : MonoBehaviour
 {
-    public Transform startEnd; // One end of the pipe
-    public Transform endEnd; // The other end of the pipe
+    public Transform startEnd;
+    public Transform endEnd;
 
     private PlayerInteraction playerInteraction;
 
-    public LayerMask pickable; // Layer for detecting other pipes
-    public float snapDistance = 1f; // Distance threshold for snapping pipes together
+    public LayerMask pickable;
+    [Tooltip("Max end-to-end distance to show ghost / allow snap on release.")]
+    public float snapDistance = 1.75f;
     public float snappedRotateStepDegrees = 45f;
+
+    [Header("Snap Preview")]
+    [Tooltip("Optional override material for the ghost. If empty, a transparent grey HDRP Unlit is created at runtime.")]
+    public Material ghostMaterial;
+    public Color ghostColor = new Color(0.72f, 0.72f, 0.72f, 0.32f);
 
     private bool isBeingHeld;
     public bool isSnapped;
     private Rigidbody rb;
 
-    // The next pipe in the series
     public Pipe previousPipe;
     public Pipe nextPipe;
     public bool isConnected;
     public PipeType pipeType;
 
-    /// <summary>Set when this pipe is snapped directly onto a pump/water source.</summary>
     public PipeNetworkSource attachedSource;
-
-    /// <summary>The end of this pipe that is locked to the previous pipe / source.</summary>
     public Transform connectedEnd;
 
+    private Vector3 twistReferenceDir;
+
+    private GameObject ghostInstance;
+    private Material runtimeGhostMaterial;
+    private bool hasPendingSnap;
+    private Vector3 pendingPosition;
+    private Quaternion pendingRotation;
+    private Transform pendingMyEnd;
+    private Pipe pendingOtherPipe;
+    private Transform pendingTheirEnd;
+    private PipeNetworkSource pendingSource;
+
     private const float MinOutwardSqrMagnitude = 1e-6f;
+
+    public bool HasPendingSnap => hasPendingSnap && !isSnapped;
 
     void Start()
     {
@@ -36,12 +53,30 @@ public class Pipe : MonoBehaviour
         playerInteraction = FindAnyObjectByType<PlayerInteraction>();
     }
 
+    void OnDisable()
+    {
+        ClearSnapPreview();
+    }
+
+    void OnDestroy()
+    {
+        ClearSnapPreview();
+        if (runtimeGhostMaterial)
+        {
+            Destroy(runtimeGhostMaterial);
+        }
+    }
+
     void Update()
     {
-        // Check for pipe connection only if the pipe is being held and not already snapped
-        if (isBeingHeld && !isSnapped)
+        if (isBeingHeld && !isSnapped &&
+            (playerInteraction == null || !playerInteraction.isInRotationMode))
         {
-            CheckForConnection();
+            UpdateSnapPreview();
+        }
+        else if (!isBeingHeld)
+        {
+            ClearSnapPreview();
         }
     }
 
@@ -61,12 +96,116 @@ public class Pipe : MonoBehaviour
         return end.forward;
     }
 
-    // Check if the held pipe is close enough to connect to another pipe or a network source
-    void CheckForConnection()
+    void UpdateSnapPreview()
     {
+        if (!TryFindSnapCandidate(
+                out var myEnd,
+                out var otherPipe,
+                out var theirEnd,
+                out var source,
+                out var posePos,
+                out var poseRot))
+        {
+            ClearSnapPreview();
+            return;
+        }
+
+        hasPendingSnap = true;
+        pendingMyEnd = myEnd;
+        pendingOtherPipe = otherPipe;
+        pendingTheirEnd = theirEnd;
+        pendingSource = source;
+        pendingPosition = posePos;
+        pendingRotation = poseRot;
+
+        ShowGhost(posePos, poseRot);
+    }
+
+    /// <summary>
+    /// Called on LMB release while holding. Returns true if the pipe locked into a snap.
+    /// </summary>
+    public bool TryCommitPendingSnap()
+    {
+        if (!HasPendingSnap)
+        {
+            ClearSnapPreview();
+            return false;
+        }
+
+        // Re-validate in case the player moved at the last frame.
+        if (!TryFindSnapCandidate(
+                out var myEnd,
+                out var otherPipe,
+                out var theirEnd,
+                out var source,
+                out var posePos,
+                out var poseRot))
+        {
+            ClearSnapPreview();
+            return false;
+        }
+
+        ClearSnapPreview();
+        transform.SetPositionAndRotation(posePos, poseRot);
+
+        if (source)
+        {
+            attachedSource = source;
+            previousPipe = null;
+            connectedEnd = myEnd;
+            isConnected = true;
+        }
+        else if (otherPipe)
+        {
+            attachedSource = null;
+            previousPipe = otherPipe;
+            otherPipe.nextPipe = this;
+            connectedEnd = myEnd;
+            isConnected = true;
+            otherPipe.isConnected = true;
+        }
+        else
+        {
+            return false;
+        }
+
+        LockPipe();
+        return true;
+    }
+
+    public void ClearSnapPreview()
+    {
+        hasPendingSnap = false;
+        pendingMyEnd = null;
+        pendingOtherPipe = null;
+        pendingTheirEnd = null;
+        pendingSource = null;
+
+        if (ghostInstance)
+        {
+            Destroy(ghostInstance);
+            ghostInstance = null;
+        }
+    }
+
+    bool TryFindSnapCandidate(
+        out Transform myEnd,
+        out Pipe otherPipe,
+        out Transform theirEnd,
+        out PipeNetworkSource source,
+        out Vector3 posePos,
+        out Quaternion poseRot)
+    {
+        myEnd = null;
+        otherPipe = null;
+        theirEnd = null;
+        source = null;
+        posePos = transform.position;
+        poseRot = transform.rotation;
+
         if (!startEnd || !endEnd)
         {
-            return;
+            return false;
         }
 
         float reachFromCenter = 0f;
@@ -85,23 +224,23 @@ public class Pipe : MonoBehaviour
         Collider[] nearbyPipes = Physics.OverlapSphere(transform.position, searchRadius, pickable);
         foreach (Collider other in nearbyPipes)
         {
-            Pipe otherPipe = other.GetComponent<Pipe>();
-            if (!otherPipe || otherPipe == this || !otherPipe.startEnd || !otherPipe.endEnd)
+            Pipe candidate = other.GetComponentInParent<Pipe>();
+            if (!candidate || candidate == this || !candidate.startEnd || !candidate.endEnd)
             {
                 continue;
             }
 
-            foreach (Transform myEnd in GetEnds())
+            foreach (Transform candidateMyEnd in GetEnds())
             {
-                foreach (Transform theirEnd in otherPipe.GetEnds())
+                foreach (Transform candidateTheirEnd in candidate.GetEnds())
                 {
-                    float distance = Vector3.Distance(myEnd.position, theirEnd.position);
+                    float distance = Vector3.Distance(candidateMyEnd.position, candidateTheirEnd.position);
                     if (distance <= bestPipeDistance)
                     {
                         bestPipeDistance = distance;
-                        bestMyEndForPipe = myEnd;
-                        bestTheirEnd = theirEnd;
-                        bestOther = otherPipe;
+                        bestMyEndForPipe = candidateMyEnd;
+                        bestTheirEnd = candidateTheirEnd;
+                        bestOther = candidate;
                     }
                 }
             }
@@ -111,7 +250,6 @@ public class Pipe : MonoBehaviour
         Transform bestMyEndForSource = null;
         PipeNetworkSource bestSource = null;
 
-        // Sources (pumps / water) may not be on the pickable layer — search all colliders.
         Collider[] nearbyAll = Physics.OverlapSphere(transform.position, searchRadius);
         foreach (Collider other in nearbyAll)
         {
@@ -120,94 +258,234 @@ public class Pipe : MonoBehaviour
                 continue;
             }
 
-            var source = other.GetComponentInParent<PipeNetworkSource>();
-            if (!source)
+            var candidateSource = other.GetComponentInParent<PipeNetworkSource>();
+            if (!candidateSource)
             {
                 continue;
             }
 
-            var attachPos = source.GetAttachPosition();
-            var radius = source.connectRadius > 0f ? source.connectRadius : snapDistance;
+            var attachPos = candidateSource.GetAttachPosition();
+            var radius = candidateSource.connectRadius > 0f ? candidateSource.connectRadius : snapDistance;
             var maxDist = Mathf.Min(snapDistance, radius);
 
-            foreach (Transform myEnd in GetEnds())
+            foreach (Transform candidateMyEnd in GetEnds())
             {
-                float distance = Vector3.Distance(myEnd.position, attachPos);
+                float distance = Vector3.Distance(candidateMyEnd.position, attachPos);
                 if (distance <= maxDist && distance <= bestSourceDistance)
                 {
                     bestSourceDistance = distance;
-                    bestMyEndForSource = myEnd;
-                    bestSource = source;
+                    bestMyEndForSource = candidateMyEnd;
+                    bestSource = candidateSource;
                 }
             }
         }
 
         if (bestSource != null && bestSourceDistance <= bestPipeDistance)
         {
-            AlignAndSnapToSource(bestSource, bestMyEndForSource);
+            if (!TryComputeSourcePose(bestSource, bestMyEndForSource, out posePos, out poseRot))
+            {
+                return false;
+            }
+
+            myEnd = bestMyEndForSource;
+            source = bestSource;
+            return true;
         }
-        else if (bestOther != null)
+
+        if (bestOther != null)
         {
-            AlignAndSnapPipe(bestTheirEnd, bestOther, bestMyEndForPipe);
+            if (!TryComputePipePose(bestTheirEnd, bestOther, bestMyEndForPipe, out posePos, out poseRot))
+            {
+                return false;
+            }
+
+            myEnd = bestMyEndForPipe;
+            otherPipe = bestOther;
+            theirEnd = bestTheirEnd;
+            return true;
         }
+
+        return false;
     }
 
-    private void AlignAndSnapToSource(PipeNetworkSource source, Transform myEnd)
+    bool TryComputeSourcePose(
+        PipeNetworkSource source,
+        Transform myEnd,
+        out Vector3 posePos,
+        out Quaternion poseRot)
     {
+        posePos = transform.position;
+        poseRot = transform.rotation;
+
         if (!source || !myEnd)
         {
-            return;
+            return false;
         }
 
         Vector3 myOutward = GetOutward(myEnd);
         Vector3 theirOutward = source.GetOutward();
-
         if (myOutward.sqrMagnitude < MinOutwardSqrMagnitude ||
             theirOutward.sqrMagnitude < MinOutwardSqrMagnitude)
         {
-            return;
+            return false;
         }
 
-        Vector3 targetOutward = -theirOutward;
-        transform.rotation = Quaternion.FromToRotation(myOutward, targetOutward) * transform.rotation;
-        transform.position += source.GetAttachPosition() - myEnd.position;
-
-        attachedSource = source;
-        previousPipe = null;
-        connectedEnd = myEnd;
-        isConnected = true;
-        LockPipe();
+        ComputeAlignedPose(myEnd, -theirOutward, myOutward, source.GetAttachPosition(), out posePos, out poseRot);
+        return true;
     }
 
-    // Align and snap the held pipe to the target pipe
-    private void AlignAndSnapPipe(Transform theirEnd, Pipe otherPipe, Transform myEnd)
+    bool TryComputePipePose(
+        Transform theirEnd,
+        Pipe otherPipe,
+        Transform myEnd,
+        out Vector3 posePos,
+        out Quaternion poseRot)
     {
+        posePos = transform.position;
+        poseRot = transform.rotation;
+
+        if (!theirEnd || !otherPipe || !myEnd)
+        {
+            return false;
+        }
+
         Vector3 myOutward = GetOutward(myEnd);
         Vector3 theirOutward = otherPipe.GetOutward(theirEnd);
-
         if (myOutward.sqrMagnitude < MinOutwardSqrMagnitude ||
             theirOutward.sqrMagnitude < MinOutwardSqrMagnitude)
+        {
+            return false;
+        }
+
+        ComputeAlignedPose(myEnd, -theirOutward, myOutward, theirEnd.position, out posePos, out poseRot);
+        return true;
+    }
+
+    void ComputeAlignedPose(
+        Transform myEnd,
+        Vector3 targetOutward,
+        Vector3 myOutward,
+        Vector3 attachPos,
+        out Vector3 posePos,
+        out Quaternion poseRot)
+    {
+        poseRot = Quaternion.FromToRotation(myOutward, targetOutward) * transform.rotation;
+        Vector3 endAfterRot = transform.position +
+                              poseRot * Quaternion.Inverse(transform.rotation) * (myEnd.position - transform.position);
+        posePos = transform.position + (attachPos - endAfterRot);
+    }
+
+    void ShowGhost(Vector3 posePos, Quaternion poseRot)
+    {
+        if (!ghostInstance)
+        {
+            ghostInstance = CreateGhostVisual();
+        }
+
+        if (!ghostInstance)
         {
             return;
         }
 
-        Vector3 targetOutward = -theirOutward;
-        transform.rotation = Quaternion.FromToRotation(myOutward, targetOutward) * transform.rotation;
-        transform.position += theirEnd.position - myEnd.position;
-
-        attachedSource = null;
-        previousPipe = otherPipe;
-        otherPipe.nextPipe = this;
-        connectedEnd = myEnd;
-
-        isConnected = true;
-        otherPipe.isConnected = true;
-        LockPipe();
+        ghostInstance.transform.SetPositionAndRotation(posePos, poseRot);
+        ghostInstance.SetActive(true);
     }
 
-    /// <summary>
-    /// Rotates this pipe (and downstream pipes) by a fixed step around the connection axis.
-    /// </summary>
+    GameObject CreateGhostVisual()
+    {
+        var ghost = Instantiate(gameObject);
+        ghost.name = name + "_Ghost";
+
+        foreach (var pipe in ghost.GetComponentsInChildren<Pipe>(true))
+        {
+            Destroy(pipe);
+        }
+
+        foreach (var body in ghost.GetComponentsInChildren<Rigidbody>(true))
+        {
+            Destroy(body);
+        }
+
+        foreach (var col in ghost.GetComponentsInChildren<Collider>(true))
+        {
+            Destroy(col);
+        }
+
+        foreach (var outline in ghost.GetComponentsInChildren<ObjectOutline>(true))
+        {
+            Destroy(outline);
+        }
+
+        var mat = ghostMaterial;
+        if (!mat)
+        {
+            if (!runtimeGhostMaterial)
+            {
+                runtimeGhostMaterial = CreateRuntimeGhostMaterial();
+            }
+
+            mat = runtimeGhostMaterial;
+        }
+
+        foreach (var renderer in ghost.GetComponentsInChildren<Renderer>(true))
+        {
+            var mats = new Material[renderer.sharedMaterials.Length];
+            for (var i = 0; i < mats.Length; i++)
+            {
+                mats[i] = mat;
+            }
+
+            renderer.sharedMaterials = mats;
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+        }
+
+        return ghost;
+    }
+
+    Material CreateRuntimeGhostMaterial()
+    {
+        var shader = Shader.Find("HDRP/Unlit");
+        if (!shader)
+        {
+            shader = Shader.Find("Unlit/Color");
+        }
+
+        var mat = new Material(shader);
+        var color = ghostColor;
+        // Keep alpha readable even if inspector alpha was left at 1 on older instances.
+        if (color.a >= 0.99f)
+        {
+            color.a = 0.32f;
+        }
+
+        if (mat.HasProperty("_UnlitColor"))
+        {
+            mat.SetColor("_UnlitColor", color);
+        }
+
+        if (mat.HasProperty("_BaseColor"))
+        {
+            mat.SetColor("_BaseColor", color);
+        }
+
+        if (mat.HasProperty("_Color"))
+        {
+            mat.SetColor("_Color", color);
+        }
+
+        // Proper HDRP transparent setup (keywords, blend, render queue).
+        HDMaterial.SetSurfaceType(mat, transparent: true);
+        HDMaterial.SetRenderingPass(mat, HDMaterial.RenderingPass.Default);
+
+        if (mat.HasProperty("_ZWrite"))
+        {
+            mat.SetFloat("_ZWrite", 0f);
+        }
+
+        return mat;
+    }
+
     public void RotateAlongConnection(float degrees)
     {
         if (!isSnapped)
@@ -217,7 +495,6 @@ public class Pipe : MonoBehaviour
 
         if (!TryGetConnectionAxis(out var pivot, out var axis))
         {
-            // Last resort: twist around the pipe's primary end axis.
             if (connectedEnd)
             {
                 pivot = connectedEnd.position;
@@ -245,7 +522,6 @@ public class Pipe : MonoBehaviour
             pipe.transform.RotateAround(pivot, axis, degrees);
         }
 
-        // Kill float drift at the joint.
         if (connectedEnd)
         {
             var correction = pivot - connectedEnd.position;
@@ -261,7 +537,107 @@ public class Pipe : MonoBehaviour
 
     public void RotateAlongConnectionStep()
     {
-        RotateAlongConnection(snappedRotateStepDegrees);
+        if (!isSnapped || !TryGetConnectionAxis(out var pivot, out var axis))
+        {
+            return;
+        }
+
+        axis.Normalize();
+        EnsureTwistReference(axis);
+
+        var marker = Vector3.ProjectOnPlane(GetTwistMarkerDirection(), axis);
+        if (marker.sqrMagnitude < MinOutwardSqrMagnitude)
+        {
+            RotateAlongConnection(snappedRotateStepDegrees);
+            return;
+        }
+
+        marker.Normalize();
+        var angle = Mathf.Repeat(Vector3.SignedAngle(twistReferenceDir, marker, axis), 360f);
+        var step = snappedRotateStepDegrees > 0f ? snappedRotateStepDegrees : 45f;
+        var next = Mathf.Floor(angle / step) * step + step;
+        if (next >= 360f)
+        {
+            next -= 360f;
+        }
+
+        var delta = Mathf.Repeat(next - angle, 360f);
+        if (delta < 0.01f)
+        {
+            delta = step;
+        }
+
+        RotateAlongConnection(delta);
+    }
+
+    private void CaptureTwistReference()
+    {
+        if (!TryGetConnectionAxis(out _, out var axis))
+        {
+            twistReferenceDir = Vector3.zero;
+            return;
+        }
+
+        SetWorldTwistReference(axis.normalized);
+    }
+
+    private void EnsureTwistReference(Vector3 axis)
+    {
+        if (twistReferenceDir.sqrMagnitude > MinOutwardSqrMagnitude)
+        {
+            var projected = Vector3.ProjectOnPlane(twistReferenceDir, axis);
+            if (projected.sqrMagnitude > MinOutwardSqrMagnitude)
+            {
+                twistReferenceDir = projected.normalized;
+                return;
+            }
+        }
+
+        SetWorldTwistReference(axis);
+    }
+
+    private void SetWorldTwistReference(Vector3 axis)
+    {
+        var reference = Vector3.ProjectOnPlane(Vector3.up, axis);
+        if (reference.sqrMagnitude < MinOutwardSqrMagnitude)
+        {
+            reference = Vector3.ProjectOnPlane(Vector3.right, axis);
+        }
+
+        twistReferenceDir = reference.normalized;
+    }
+
+    private Vector3 GetTwistMarkerDirection()
+    {
+        Transform freeEnd = null;
+        if (connectedEnd == startEnd)
+        {
+            freeEnd = endEnd;
+        }
+        else if (connectedEnd == endEnd)
+        {
+            freeEnd = startEnd;
+        }
+        else if (endEnd)
+        {
+            freeEnd = endEnd;
+        }
+        else
+        {
+            freeEnd = startEnd;
+        }
+
+        if (freeEnd)
+        {
+            return freeEnd.position - transform.position;
+        }
+
+        return transform.up;
+    }
+
+    public void ClearTwistReference()
+    {
+        twistReferenceDir = Vector3.zero;
     }
 
     private bool TryGetConnectionAxis(out Vector3 pivot, out Vector3 axis)
@@ -288,7 +664,7 @@ public class Pipe : MonoBehaviour
 
         if (previousPipe && previousPipe.startEnd && previousPipe.endEnd)
         {
-            Transform theirEnd = null;
+            Transform closestEnd = null;
             float best = float.MaxValue;
             foreach (var end in new[] { previousPipe.startEnd, previousPipe.endEnd })
             {
@@ -302,14 +678,14 @@ public class Pipe : MonoBehaviour
                 if (d < best)
                 {
                     best = d;
-                    theirEnd = end;
+                    closestEnd = end;
                 }
             }
 
-            if (theirEnd)
+            if (closestEnd)
             {
-                pivot = theirEnd.position;
-                axis = previousPipe.GetOutward(theirEnd);
+                pivot = closestEnd.position;
+                axis = previousPipe.GetOutward(closestEnd);
                 return axis.sqrMagnitude > MinOutwardSqrMagnitude;
             }
         }
@@ -331,7 +707,6 @@ public class Pipe : MonoBehaviour
         return list;
     }
 
-    // Lock the pipe in place by making it kinematic and disabling further movement
     void LockPipe()
     {
         isSnapped = true;
@@ -341,8 +716,9 @@ public class Pipe : MonoBehaviour
         }
 
         isBeingHeld = false;
+        ClearSnapPreview();
+        CaptureTwistReference();
 
-        // Holding must end immediately so free-rotate / grab cannot keep driving this pipe.
         if (playerInteraction)
         {
             playerInteraction.NotifyPipeSnapped(this);
@@ -353,22 +729,26 @@ public class Pipe : MonoBehaviour
         }
     }
 
-    // Set whether the pipe is being held or not
     public void SetHeldState(bool held)
     {
         isBeingHeld = held;
 
+        if (!held)
+        {
+            ClearSnapPreview();
+        }
+
         if (held)
         {
-            rb.isKinematic = false; // Enable physics while being held
+            rb.isKinematic = false;
         }
         else if (!isSnapped)
         {
-            rb.isKinematic = false; // Enable physics when dropped, if not snapped
+            rb.isKinematic = false;
         }
         else
         {
-            rb.isKinematic = true; // Disable physics when snapped to prevent further movement
+            rb.isKinematic = true;
         }
     }
 }

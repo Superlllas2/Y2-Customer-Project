@@ -175,7 +175,8 @@ public class ControlsPanelController : MonoBehaviour
         SetLabel(root, "bind-jump", input.BindingDisplay(input.Jump));
         SetLabel(root, "bind-detector", input.BindingDisplay(input.ToggleDetector));
         SetLabel(root, "bind-interact", input.BindingDisplay(input.Interact));
-        SetLabel(root, "bind-rotate-snapped", input.BindingDisplay(input.RotateModifier));
+        SetLabel(root, "bind-rotate", "Hold " + input.BindingDisplay(input.RotateModifier) + " + Mouse");
+        SetLabel(root, "bind-rotate-snapped", input.BindingDisplay(input.RotateModifier) + " → next 45°");
         SetLabel(root, "bind-pump", input.BindingDisplay(input.SpawnPump));
         SetLabel(root, "rotate-prompt-key", input.BindingDisplay(input.RotateModifier));
     }

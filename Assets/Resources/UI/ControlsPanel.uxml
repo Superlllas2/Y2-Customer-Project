@@ -17,11 +17,15 @@
                     <ui:Label name="bind-detector" text="E" class="key" />
                 </ui:VisualElement>
                 <ui:VisualElement class="row">
-                    <ui:Label text="Grab / disconnect pipe" class="action" />
+                    <ui:Label text="Grab / release to snap" class="action" />
                     <ui:Label name="bind-interact" text="LMB" class="key" />
                 </ui:VisualElement>
                 <ui:VisualElement class="row">
-                    <ui:Label text="Rotate snapped pipe 45°" class="action" />
+                    <ui:Label text="Rotate held pipe" class="action" />
+                    <ui:Label name="bind-rotate" text="Hold R + Mouse" class="key" />
+                </ui:VisualElement>
+                <ui:VisualElement class="row">
+                    <ui:Label text="Rotate snapped pipe" class="action" />
                     <ui:Label name="bind-rotate-snapped" text="R" class="key" />
                 </ui:VisualElement>
                 <ui:VisualElement class="row">

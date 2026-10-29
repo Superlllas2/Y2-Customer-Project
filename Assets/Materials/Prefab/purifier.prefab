@@ -232,7 +232,7 @@ MonoBehaviour:
   pickable:
     serializedVersion: 2
     m_Bits: 128
-  snapDistance: 0.2
+  snapDistance: 1.75
   isSnapped: 0
   connectedAxis: 
   connectionDirections:

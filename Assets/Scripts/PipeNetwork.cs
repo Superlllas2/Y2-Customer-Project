@@ -70,6 +70,7 @@ public static class PipeNetwork
             current.previousPipe = null;
             current.attachedSource = null;
             current.connectedEnd = null;
+            current.ClearTwistReference();
             current.isConnected = false;
             current.isSnapped = false;
             current.SetHeldState(false);
