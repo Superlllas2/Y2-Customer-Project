@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Pipe : MonoBehaviour
@@ -9,6 +10,7 @@ public class Pipe : MonoBehaviour
 
     public LayerMask pickable; // Layer for detecting other pipes
     public float snapDistance = 1f; // Distance threshold for snapping pipes together
+    public float snappedRotateStepDegrees = 45f;
 
     private bool isBeingHeld;
     public bool isSnapped;
@@ -23,6 +25,9 @@ public class Pipe : MonoBehaviour
     /// <summary>Set when this pipe is snapped directly onto a pump/water source.</summary>
     public PipeNetworkSource attachedSource;
 
+    /// <summary>The end of this pipe that is locked to the previous pipe / source.</summary>
+    public Transform connectedEnd;
+
     private const float MinOutwardSqrMagnitude = 1e-6f;
 
     void Start()
@@ -34,7 +39,7 @@ public class Pipe : MonoBehaviour
     void Update()
     {
         // Check for pipe connection only if the pipe is being held and not already snapped
-        if (isBeingHeld && !isSnapped && playerInteraction && !playerInteraction.isInRotationMode)
+        if (isBeingHeld && !isSnapped)
         {
             CheckForConnection();
         }
@@ -169,6 +174,7 @@ public class Pipe : MonoBehaviour
 
         attachedSource = source;
         previousPipe = null;
+        connectedEnd = myEnd;
         isConnected = true;
         LockPipe();
     }
@@ -192,18 +198,159 @@ public class Pipe : MonoBehaviour
         attachedSource = null;
         previousPipe = otherPipe;
         otherPipe.nextPipe = this;
+        connectedEnd = myEnd;
 
         isConnected = true;
         otherPipe.isConnected = true;
         LockPipe();
     }
 
+    /// <summary>
+    /// Rotates this pipe (and downstream pipes) by a fixed step around the connection axis.
+    /// </summary>
+    public void RotateAlongConnection(float degrees)
+    {
+        if (!isSnapped)
+        {
+            return;
+        }
+
+        if (!TryGetConnectionAxis(out var pivot, out var axis))
+        {
+            // Last resort: twist around the pipe's primary end axis.
+            if (connectedEnd)
+            {
+                pivot = connectedEnd.position;
+                axis = GetOutward(connectedEnd);
+            }
+            else if (startEnd)
+            {
+                pivot = startEnd.position;
+                axis = GetOutward(startEnd);
+            }
+            else
+            {
+                return;
+            }
+
+            if (axis.sqrMagnitude < MinOutwardSqrMagnitude)
+            {
+                return;
+            }
+        }
+
+        var chain = CollectDownstream();
+        foreach (var pipe in chain)
+        {
+            pipe.transform.RotateAround(pivot, axis, degrees);
+        }
+
+        // Kill float drift at the joint.
+        if (connectedEnd)
+        {
+            var correction = pivot - connectedEnd.position;
+            if (correction.sqrMagnitude > 1e-10f)
+            {
+                foreach (var pipe in chain)
+                {
+                    pipe.transform.position += correction;
+                }
+            }
+        }
+    }
+
+    public void RotateAlongConnectionStep()
+    {
+        RotateAlongConnection(snappedRotateStepDegrees);
+    }
+
+    private bool TryGetConnectionAxis(out Vector3 pivot, out Vector3 axis)
+    {
+        pivot = Vector3.zero;
+        axis = Vector3.zero;
+
+        if (connectedEnd)
+        {
+            pivot = connectedEnd.position;
+            axis = GetOutward(connectedEnd);
+            if (axis.sqrMagnitude > MinOutwardSqrMagnitude)
+            {
+                return true;
+            }
+        }
+
+        if (attachedSource)
+        {
+            pivot = attachedSource.GetAttachPosition();
+            axis = attachedSource.GetOutward();
+            return axis.sqrMagnitude > MinOutwardSqrMagnitude;
+        }
+
+        if (previousPipe && previousPipe.startEnd && previousPipe.endEnd)
+        {
+            Transform theirEnd = null;
+            float best = float.MaxValue;
+            foreach (var end in new[] { previousPipe.startEnd, previousPipe.endEnd })
+            {
+                if (!end)
+                {
+                    continue;
+                }
+
+                var point = connectedEnd ? connectedEnd.position : transform.position;
+                var d = Vector3.Distance(end.position, point);
+                if (d < best)
+                {
+                    best = d;
+                    theirEnd = end;
+                }
+            }
+
+            if (theirEnd)
+            {
+                pivot = theirEnd.position;
+                axis = previousPipe.GetOutward(theirEnd);
+                return axis.sqrMagnitude > MinOutwardSqrMagnitude;
+            }
+        }
+
+        return false;
+    }
+
+    private List<Pipe> CollectDownstream()
+    {
+        var list = new List<Pipe>();
+        var current = this;
+        var guard = 0;
+        while (current && guard++ < 256)
+        {
+            list.Add(current);
+            current = current.nextPipe;
+        }
+
+        return list;
+    }
+
     // Lock the pipe in place by making it kinematic and disabling further movement
     void LockPipe()
     {
         isSnapped = true;
-        rb.isKinematic = true; // Disable physics to lock the pipe in place
-        isBeingHeld = false; // Pipe is no longer being held by the player
+        if (rb)
+        {
+            rb.isKinematic = true;
+        }
+
+        isBeingHeld = false;
+
+        // Holding must end immediately so free-rotate / grab cannot keep driving this pipe.
+        if (playerInteraction)
+        {
+            playerInteraction.NotifyPipeSnapped(this);
+        }
+        else if (PlayerInteraction.Instance)
+        {
+            PlayerInteraction.Instance.NotifyPipeSnapped(this);
+        }
     }
 
     // Set whether the pipe is being held or not

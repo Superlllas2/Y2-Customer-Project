@@ -21,8 +21,8 @@
                     <ui:Label name="bind-interact" text="LMB" class="key" />
                 </ui:VisualElement>
                 <ui:VisualElement class="row">
-                    <ui:Label text="Rotate held pipe" class="action" />
-                    <ui:Label name="bind-rotate" text="Hold R + Mouse" class="key" />
+                    <ui:Label text="Rotate snapped pipe 45°" class="action" />
+                    <ui:Label name="bind-rotate-snapped" text="R" class="key" />
                 </ui:VisualElement>
                 <ui:VisualElement class="row">
                     <ui:Label text="Spawn pipe" class="action" />
@@ -40,6 +40,14 @@
             <ui:Label text="WASD to move" class="footer" />
             <ui:Button name="close-button" text="Close" class="close-btn" />
         </ui:VisualElement>
-        <ui:Label name="hint" text="H / Tab — Controls" class="hint" />
+            <ui:Label name="hint" text="H / Tab — Controls" class="hint" />
+        <ui:VisualElement name="rotate-prompt" class="rotate-prompt rotate-prompt--hidden">
+            <ui:VisualElement class="rotate-prompt-inner">
+                <ui:VisualElement class="keycap">
+                    <ui:Label name="rotate-prompt-key" text="R" class="keycap-label" />
+                </ui:VisualElement>
+                <ui:Label text="Rotate" class="rotate-prompt-label" />
+            </ui:VisualElement>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

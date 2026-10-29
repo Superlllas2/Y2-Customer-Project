@@ -58,7 +58,15 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         // Disable player input and stamina management when isDisabled is true
-        if (isDisabled || (GameInput.Instance && GameInput.Instance.IsControlsOpen)) return;
+        if (isDisabled || (GameInput.Instance && GameInput.Instance.IsControlsOpen))
+        {
+            // Clear cached axes so Tab/H cannot leave WASD "stuck" while the menu is open.
+            horizontalInput = 0f;
+            verticalInput = 0f;
+            isSprinting = false;
+            isMoving = false;
+            return;
+        }
 
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, whatIsGround);
 
@@ -85,8 +93,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Disable player movement when isDisabled is true
-        if (isDisabled) return;
+        // Disable player movement when isDisabled is true or controls UI is open
+        if (isDisabled || (GameInput.Instance && GameInput.Instance.IsControlsOpen))
+        {
+            return;
+        }
 
         MovePlayer();
     }

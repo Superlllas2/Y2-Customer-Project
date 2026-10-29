@@ -89,3 +89,54 @@
 .hint--hidden {
     display: none;
 }
+
+.rotate-prompt {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 96px;
+    height: 56px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.rotate-prompt--hidden {
+    display: none;
+}
+
+.rotate-prompt-inner {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 14px;
+    background-color: rgba(8, 12, 16, 0.72);
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: rgba(180, 200, 210, 0.22);
+}
+
+.keycap {
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(28, 36, 44, 0.95);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(210, 220, 230, 0.45);
+    margin-right: 10px;
+}
+
+.keycap-label {
+    font-size: 16px;
+    color: rgb(235, 242, 245);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.rotate-prompt-label {
+    font-size: 16px;
+    color: rgb(220, 230, 235);
+    -unity-font-style: bold;
+}

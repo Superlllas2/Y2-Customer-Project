@@ -69,6 +69,7 @@ public static class PipeNetwork
             current.nextPipe = null;
             current.previousPipe = null;
             current.attachedSource = null;
+            current.connectedEnd = null;
             current.isConnected = false;
             current.isSnapped = false;
             current.SetHeldState(false);

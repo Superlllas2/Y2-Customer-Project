@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using Cursor = UnityEngine.Cursor;
 
 /// <summary>
 /// Central Input System hub for gameplay. Create actions in code so the project
@@ -155,12 +156,20 @@ public class GameInput : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            // Keep UI map; suppress look by consumers checking IsControlsOpen
+            // Stop gameplay actions so held WASD cannot stick after the menu closes.
+            _playerMap?.Disable();
         }
         else
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            _playerMap?.Enable();
+
+            // Flush stuck key state from opening the menu mid-strafe.
+            if (Keyboard.current != null)
+            {
+                InputSystem.ResetDevice(Keyboard.current);
+            }
         }
     }
 

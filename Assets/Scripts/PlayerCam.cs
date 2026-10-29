@@ -9,7 +9,7 @@ public class PlayerCam : MonoBehaviour
     public float senseY = 15f;
 
     [Tooltip("Extra scale for Input System mouse delta (pixels).")]
-    [SerializeField] private float lookScale = 0.01f;
+    public float lookScale = 0.01f;
 
     public Transform orientation;
 
